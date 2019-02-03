@@ -29,3 +29,9 @@ lazy val commonSettings = Seq(
 
 lazy val `capturl` = (project in file("."))
   .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.parboiled,
+      Dependencies.Test.scalaTest
+    )
+  )
