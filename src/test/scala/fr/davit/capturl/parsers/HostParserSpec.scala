@@ -1,31 +1,46 @@
 package fr.davit.capturl.parsers
 
+import fr.davit.capturl.Host
+import fr.davit.capturl.Host.{IPv4Host, IPv6Host, NamedHost}
 import fr.davit.capturl.parsers.ParserFixture.TestParser
-import org.parboiled2.{ParseError, ParserInput}
+import org.parboiled2.ParserInput
 import org.scalatest.{FlatSpec, Matchers}
 
 class HostParserSpec extends FlatSpec with Matchers {
 
-  trait Fixture extends ParserFixture[String] {
-    override def createParser(input: ParserInput) = new TestParser[String](input) with HostParser {
+  trait Fixture extends ParserFixture[Host] {
+    override def createParser(input: ParserInput) = new TestParser[Host](input) with HostParser {
       override def rule = ihost
     }
   }
-
   "HostParser" should "parse IPv4 hosts" in new Fixture {
-    parse("0.0.0.0:80") shouldBe "0.0.0.0" -> ":80"
-    parse("255.255.255.255/path") shouldBe "255.255.255.255" -> "/path"
-    parse("09.09.09.09") shouldBe "9.9.9.9" -> ""
+    parse("0.0.0.0:80") shouldBe IPv4Host(Vector(0, 0, 0, 0)) -> ":80"
+    parse("255.255.255.255/path") shouldBe IPv4Host(Vector(255, 255, 255, 255)) -> "/path"
+    parse("09.09.09.09") shouldBe IPv4Host(Vector(9, 9, 9, 9)) -> ""
 
-    a[ParseError] shouldBe thrownBy(parse("256.256.256.256", canThrow = true))
+    parse("256.256.256.256") should not be a[IPv4Host] // 256.256.256.256 is considered as a named host
+  }
+
+  it should "parse IPv6 hosts" in new Fixture {
+    val t = createParser("::1").IPv6address.run()
+
+    parse("[::1]:80") shouldBe IPv6Host(
+      Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+    ) -> ":80"
+    parse("[2001:0db8:0000:0000:0000:ff00:0042:8329]/path") shouldBe IPv6Host(
+      Vector(0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x42, 0x83, 0x29)
+    ) -> "/path"
+
+    parse("::1") should not be a[IPv4Host] // IPv6 is not in square braces
+    parse("[::FG00]") should not be a[IPv4Host] // FG00 is not valid hexadecimal
   }
 
   it should "parse domains" in new Fixture {
-    parse("") shouldBe "" -> ""
-    parse("example.com:80") shouldBe "example.com" -> ":80"
-    parse("Example.COM/path") shouldBe "example.com" -> "/path"
-    parse("bücher.example") shouldBe "bücher.example" -> ""
-    parse("ἀῼ") shouldBe "ἀῳ" -> "" // lower case unicode extended
+    parse("") shouldBe NamedHost("") -> ""
+    parse("example.com:80") shouldBe NamedHost("example.com") -> ":80"
+    parse("Example.COM/path") shouldBe NamedHost("example.com") -> "/path"
+    parse("bücher.example") shouldBe NamedHost("bücher.example") -> ""
+    parse("ἀῼ") shouldBe NamedHost("ἀῳ") -> "" // lower case unicode extended
   }
 
 }

@@ -1,6 +1,6 @@
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl.Authority
+import fr.davit.capturl.{Authority, Host}
 import fr.davit.capturl.Authority.UserInfo
 import fr.davit.capturl.parsers.ParserFixture.TestParser
 import org.parboiled2.{ParseError, ParserInput}
@@ -43,12 +43,12 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse authority" in new AuthorityFixture {
-    parse("") shouldBe Authority("", None, None) -> ""
-    parse("/path") shouldBe Authority("", None, None) -> "/path"
-    parse("example.com/path") shouldBe Authority("example.com", None, None) -> "/path"
-    parse("example.com:80/path") shouldBe Authority("example.com", Some(80), None) -> "/path"
-    parse("user:password@example.com/path") shouldBe Authority("example.com", None, Some(UserInfo("user:password"))) -> "/path"
-    parse("user:password@example.com:80/path") shouldBe Authority("example.com", Some(80), Some(UserInfo("user:password"))) -> "/path"
+    parse("") shouldBe Authority(Host.NamedHost(""), None, None) -> ""
+    parse("/path") shouldBe Authority(Host.NamedHost(""), None, None) -> "/path"
+    parse("example.com/path") shouldBe Authority(Host.NamedHost("example.com"), None, None) -> "/path"
+    parse("example.com:80/path") shouldBe Authority(Host.NamedHost("example.com"), Some(80), None) -> "/path"
+    parse("user:password@example.com/path") shouldBe Authority(Host.NamedHost("example.com"), None, Some(UserInfo("user:password"))) -> "/path"
+    parse("user:password@example.com:80/path") shouldBe Authority(Host.NamedHost("example.com"), Some(80), Some(UserInfo("user:password"))) -> "/path"
   }
 
 }
