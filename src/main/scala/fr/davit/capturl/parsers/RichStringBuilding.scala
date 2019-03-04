@@ -2,8 +2,13 @@ package fr.davit.capturl.parsers
 
 import org.parboiled2.CharPredicate._
 import org.parboiled2._
+import shapeless._
 
 trait RichStringBuilding extends StringBuilding { this: Parser =>
+
+  def phrase[T](r: this.type  => Rule1[T])(implicit scheme: Parser.DeliveryScheme[T :: HNil]): scheme.Result = {
+    __run(rule(r(this) ~ EOI))
+  }
 
   private def codePointInRanges(ranges: Seq[Range]): Rule0 = rule {
     // support of unicode
@@ -59,4 +64,7 @@ trait RichStringBuilding extends StringBuilding { this: Parser =>
     run(sb.append(CharUtils.toLowerCase(lastChar)))
   }
 
+  def phraseSB(r: this.type => Rule0)(implicit scheme: Parser.DeliveryScheme[String :: HNil]): scheme.Result = {
+    __run(rule(r(this) ~ EOI ~ push(sb.toString)))
+  }
 }

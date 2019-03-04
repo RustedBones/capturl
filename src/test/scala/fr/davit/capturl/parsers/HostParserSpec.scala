@@ -13,10 +13,11 @@ class HostParserSpec extends FlatSpec with Matchers {
       override def rule = ihost
     }
   }
+
   "HostParser" should "parse IPv4 hosts" in new Fixture {
-    parse("0.0.0.0:80") shouldBe IPv4Host(Vector(0, 0, 0, 0)) -> ":80"
+    parse("0.0.0.0:80") shouldBe IPv4Host(Vector(0, 0, 0, 0))                   -> ":80"
     parse("255.255.255.255/path") shouldBe IPv4Host(Vector(255, 255, 255, 255)) -> "/path"
-    parse("09.09.09.09") shouldBe IPv4Host(Vector(9, 9, 9, 9)) -> ""
+    parse("09.09.09.09") shouldBe IPv4Host(Vector(9, 9, 9, 9))                  -> ""
 
     parse("256.256.256.256") should not be a[IPv4Host] // 256.256.256.256 is considered as a named host
   }
@@ -36,11 +37,11 @@ class HostParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse domains" in new Fixture {
-    parse("") shouldBe NamedHost("") -> ""
-    parse("example.com:80") shouldBe NamedHost("example.com") -> ":80"
-    parse("Example.COM/path") shouldBe NamedHost("example.com") -> "/path"
+    parse("") shouldBe NamedHost("")                             -> ""
+    parse("example.com:80") shouldBe NamedHost("example.com")    -> ":80"
+    parse("Example.COM/path") shouldBe NamedHost("example.com")  -> "/path"
     parse("bücher.example") shouldBe NamedHost("bücher.example") -> ""
-    parse("ἀῼ") shouldBe NamedHost("ἀῳ") -> "" // lower case unicode extended
+    parse("ἀῼ") shouldBe NamedHost("ἀῳ")                         -> "" // lower case unicode extended
   }
 
 }

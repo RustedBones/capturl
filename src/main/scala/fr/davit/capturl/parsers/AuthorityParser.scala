@@ -10,6 +10,10 @@ import scala.util.{Success, Try}
 object AuthorityParser {
 
   val MaxPort = 65535
+
+  def apply(userInfo: String): Parser with AuthorityParser = {
+    new StringParser(userInfo) with AuthorityParser
+  }
 }
 
 trait AuthorityParser extends HostParser { this: Parser =>
@@ -18,20 +22,20 @@ trait AuthorityParser extends HostParser { this: Parser =>
     capture(Digit.+) ~> { s: String =>
       Try(s.toInt) match {
         case Success(value) if value < AuthorityParser.MaxPort => push(value)
-        case _                                                 => MISMATCH
+        case _                                                 => failX(s"Invalid port '$s'")
       }
     }
   }
 
   def iuserinfo: Rule1[UserInfo] = rule {
     clearSB() ~
-      (iunreserved | `pct-encoded` | `sub-delims` | ':' ~ appendSB()).* ~ &('@') ~
-      push(UserInfo(sb.toString))
+      (iunreserved | `pct-encoded` | `sub-delims` | ':' ~ appendSB()).* ~
+      push(new UserInfo(sb.toString))
   }
 
   def iauthority: Rule1[Authority] = rule {
     ((iuserinfo ~ '@').? ~ ihost ~ (':' ~ port).?) ~> { (u: Option[UserInfo], h: Host, p: Option[Int]) =>
-        Authority(h, p, u)
+      Authority(h, p.getOrElse(-1), u.getOrElse(UserInfo.empty))
     }
   }
 }

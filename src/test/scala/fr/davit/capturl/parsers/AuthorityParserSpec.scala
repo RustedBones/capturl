@@ -2,6 +2,7 @@ package fr.davit.capturl.parsers
 
 import fr.davit.capturl.{Authority, Host}
 import fr.davit.capturl.Authority.UserInfo
+import fr.davit.capturl.Host.NamedHost
 import fr.davit.capturl.parsers.ParserFixture.TestParser
 import org.parboiled2.{ParseError, ParserInput}
 import org.scalatest.{FlatSpec, Matchers}
@@ -27,12 +28,9 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   "AuthorityParser" should "parse userinfo" in new UserInfoFixture {
-    parse("userinfo@host") shouldBe UserInfo("userinfo") -> "@host"
-    parse("%75%73%65%72%69%6E%66%6F@host") shouldBe UserInfo("userinfo") -> "@host"
-
-    a[ParseError] shouldBe thrownBy(parse("", canThrow = true))
-    a[ParseError] shouldBe thrownBy(parse("nodelimiter", canThrow = true))
-    a[ParseError] shouldBe thrownBy(parse("invalid char@", canThrow = true))
+    parse("@host") shouldBe new UserInfo("") -> "@host"
+    parse("userinfo@host") shouldBe new UserInfo("userinfo") -> "@host"
+    parse("%75%73%65%72%69%6E%66%6F@host") shouldBe new UserInfo("userinfo") -> "@host"
   }
 
   it should "parse port" in new PortFixture {
@@ -43,12 +41,12 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse authority" in new AuthorityFixture {
-    parse("") shouldBe Authority(Host.NamedHost(""), None, None) -> ""
-    parse("/path") shouldBe Authority(Host.NamedHost(""), None, None) -> "/path"
-    parse("example.com/path") shouldBe Authority(Host.NamedHost("example.com"), None, None) -> "/path"
-    parse("example.com:80/path") shouldBe Authority(Host.NamedHost("example.com"), Some(80), None) -> "/path"
-    parse("user:password@example.com/path") shouldBe Authority(Host.NamedHost("example.com"), None, Some(UserInfo("user:password"))) -> "/path"
-    parse("user:password@example.com:80/path") shouldBe Authority(Host.NamedHost("example.com"), Some(80), Some(UserInfo("user:password"))) -> "/path"
+    parse("") shouldBe Authority(new NamedHost("")) -> ""
+    parse("/path") shouldBe Authority(new NamedHost("")) -> "/path"
+    parse("example.com/path") shouldBe Authority(new NamedHost("example.com")) -> "/path"
+    parse("example.com:80/path") shouldBe Authority(new NamedHost("example.com"), 80) -> "/path"
+    parse("user:password@example.com/path") shouldBe Authority(new NamedHost("example.com"), userInfo = new UserInfo("user:password")) -> "/path"
+    parse("user:password@example.com:80/path") shouldBe Authority(new NamedHost("example.com"), 80, new UserInfo("user:password")) -> "/path"
   }
 
 }

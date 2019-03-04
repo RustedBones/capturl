@@ -1,7 +1,7 @@
 package fr.davit.capturl
 
-sealed abstract case class Iri(
-    scheme: Scheme,
-    authority: Authority,
+final case class Iri(scheme: Scheme, authority: Authority, path: Path, query: Query, fragment: Fragment)
 
-)
+object Iri {
+
+}

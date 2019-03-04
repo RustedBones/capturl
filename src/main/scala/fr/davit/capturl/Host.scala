@@ -11,12 +11,14 @@ sealed trait Host
 
 object Host {
 
+  val empty: Host = Empty
+
   //--------------------------------------------------------------------------------------------------------------------
   // IPv4Host
   //--------------------------------------------------------------------------------------------------------------------
   object IPv4Host {
     def apply(ip: String): IPv4Host = {
-      HostParser(ip).IPv4address.run()
+      HostParser(ip).phrase(_.IPv4address)
     }
 
     def apply(byte1: Byte, byte2: Byte, byte3: Byte, byte4: Byte): IPv4Host = {
@@ -39,7 +41,7 @@ object Host {
   //--------------------------------------------------------------------------------------------------------------------
   object IPv6Host {
     def apply(ip: String): IPv6Host = {
-      HostParser(ip).IPv6address.run()
+      HostParser(ip).phrase(_.IPv6address)
     }
 
     def apply(inetAddress: Inet6Address): IPv6Host = apply(inetAddress.getAddress)
@@ -58,9 +60,14 @@ object Host {
   //--------------------------------------------------------------------------------------------------------------------
   object NamedHost {
     def apply(address: String): NamedHost = {
-      HostParser(address).`ireg-name`.run()
+      HostParser(address).phrase(_.`ireg-name`)
     }
   }
 
   final case class NamedHost private[capturl] (address: String) extends Host
+
+  //--------------------------------------------------------------------------------------------------------------------
+  // EmptyHost
+  //--------------------------------------------------------------------------------------------------------------------
+  object Empty extends Host
 }
