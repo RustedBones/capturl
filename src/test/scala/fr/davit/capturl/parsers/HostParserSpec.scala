@@ -1,8 +1,7 @@
 package fr.davit.capturl.parsers
-
-import fr.davit.capturl.Host
-import fr.davit.capturl.Host.{IPv4Host, IPv6Host, NamedHost}
+import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
 import fr.davit.capturl.parsers.ParserFixture.TestParser
+import fr.davit.capturl.scaladsl.Host
 import org.parboiled2.ParserInput
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -39,8 +38,10 @@ class HostParserSpec extends FlatSpec with Matchers {
   it should "parse domains" in new Fixture {
     parse("") shouldBe NamedHost("")                             -> ""
     parse("example.com:80") shouldBe NamedHost("example.com")    -> ":80"
-    parse("Example.COM/path") shouldBe NamedHost("example.com")  -> "/path"
     parse("bücher.example") shouldBe NamedHost("bücher.example") -> ""
+
+    // normalization
+    parse("Example.COM/path") shouldBe NamedHost("example.com")  -> "/path"
     parse("ἀῼ") shouldBe NamedHost("ἀῳ")                         -> "" // lower case unicode extended
   }
 

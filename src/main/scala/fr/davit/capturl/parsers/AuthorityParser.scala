@@ -1,7 +1,7 @@
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl.Authority.UserInfo
-import fr.davit.capturl.{Authority, Host}
+import fr.davit.capturl.scaladsl.Authority.UserInfo
+import fr.davit.capturl.scaladsl.{Authority, Host}
 import org.parboiled2.CharPredicate._
 import org.parboiled2.{Parser, Rule1}
 

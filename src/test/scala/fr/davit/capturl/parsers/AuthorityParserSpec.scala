@@ -1,9 +1,9 @@
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl.{Authority, Host}
-import fr.davit.capturl.Authority.UserInfo
-import fr.davit.capturl.Host.NamedHost
+import fr.davit.capturl.scaladsl.Authority.UserInfo
+import fr.davit.capturl.scaladsl.Host.NamedHost
 import fr.davit.capturl.parsers.ParserFixture.TestParser
+import fr.davit.capturl.scaladsl.Authority
 import org.parboiled2.{ParseError, ParserInput}
 import org.scalatest.{FlatSpec, Matchers}
 

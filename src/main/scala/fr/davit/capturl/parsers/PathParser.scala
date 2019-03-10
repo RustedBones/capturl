@@ -1,10 +1,6 @@
 package fr.davit.capturl.parsers
-
-import fr.davit.capturl.Path
-import fr.davit.capturl.Path._
+import fr.davit.capturl.scaladsl.Path
 import org.parboiled2._
-
-import scala.annotation.tailrec
 
 object PathParser {
 
@@ -17,18 +13,9 @@ trait PathParser extends RichStringBuilding {
   this: Parser =>
 
   def build(): Path = {
-    @tailrec
-    def build(segments: List[String], path: Option[PathElement] = None): Path =
-      segments match {
-        case Nil               => path.getOrElse(Slash(End))
-        case "" :: Nil         => path.map(Slash).getOrElse(Slash(End))
-        case "." :: tail       => build(tail, path)
-        case ".." :: "" :: Nil => build("" :: Nil, path) // special case when '..' is just after root
-        case ".." :: _ :: tail => build(tail, path)
-        case segment :: tail   => build(tail, Some(Segment(segment, path.map(Slash).getOrElse(End))))
-      }
-
-    build(sb.toString.split('/').toList.reverse)
+    val b = Path.newBuilder
+    b ++= sb.toString.split("/")
+    b.result()
   }
 
   def isegment: Rule0 = rule {

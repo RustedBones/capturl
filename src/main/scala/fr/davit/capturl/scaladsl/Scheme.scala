@@ -1,16 +1,23 @@
-package fr.davit.capturl
+package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.SchemeParser
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
-final case class Scheme private[capturl] (name: String)
+final case class Scheme private[capturl] (name: String) {
+  def isEmpty: Boolean  = name.isEmpty
+  def nonEmpty: Boolean = !isEmpty
+
+  override def toString: String = name
+}
 
 object Scheme {
 
   private var registry: Map[Scheme, Int] = Map.empty
 
   def register(scheme: Scheme, defaultPort: Int): Unit = {
-    require(!registry.contains(scheme), s"Scheme ${scheme.name} is already registered with default port ${registry(scheme)}")
+    require(
+      !registry.contains(scheme),
+      s"Scheme ${scheme.name} is already registered with default port ${registry(scheme)}")
     registry += scheme -> defaultPort
   }
 

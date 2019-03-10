@@ -1,7 +1,6 @@
 package fr.davit.capturl.parsers
-
-import fr.davit.capturl.Host
-import fr.davit.capturl.Host.{IPv4Host, IPv6Host, NamedHost}
+import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
+import fr.davit.capturl.scaladsl.Host
 import org.parboiled2.CharPredicate._
 import org.parboiled2.{Parser, Rule1}
 

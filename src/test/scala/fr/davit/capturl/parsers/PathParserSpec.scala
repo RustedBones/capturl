@@ -1,8 +1,7 @@
 package fr.davit.capturl.parsers
-
-import fr.davit.capturl.Path
-import fr.davit.capturl.Path.{End, Segment, Slash}
+import fr.davit.capturl.scaladsl.Path.{End, Segment, Slash}
 import fr.davit.capturl.parsers.ParserFixture.TestParser
+import fr.davit.capturl.scaladsl.Path
 import org.parboiled2.ParserInput
 import org.scalatest.{FlatSpec, Matchers}
 

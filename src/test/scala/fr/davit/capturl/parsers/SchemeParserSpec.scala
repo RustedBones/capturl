@@ -1,7 +1,6 @@
 package fr.davit.capturl.parsers
-
-import fr.davit.capturl.Scheme
 import fr.davit.capturl.parsers.ParserFixture.TestParser
+import fr.davit.capturl.scaladsl.Scheme
 import org.parboiled2.{ParseError, ParserInput}
 import org.scalatest.{FlatSpec, Matchers}
 

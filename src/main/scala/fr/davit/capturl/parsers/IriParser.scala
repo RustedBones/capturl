@@ -1,6 +1,6 @@
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl._
+import fr.davit.capturl.scaladsl._
 import org.parboiled2.{Parser, Rule1}
 
 trait IriParser

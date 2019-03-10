@@ -1,6 +1,5 @@
 package fr.davit.capturl.parsers
-
-import fr.davit.capturl.Scheme
+import fr.davit.capturl.scaladsl.Scheme
 import org.parboiled2.CharPredicate._
 import org.parboiled2.{Parser, Rule1}
 

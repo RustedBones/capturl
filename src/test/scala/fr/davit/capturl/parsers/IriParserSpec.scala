@@ -1,8 +1,7 @@
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl.Host.NamedHost
-import fr.davit.capturl.Path.{End, Segment, Slash}
-import fr.davit.capturl._
+import fr.davit.capturl.scaladsl.Path.{End, Segment, Slash}
+import fr.davit.capturl.scaladsl._
 import fr.davit.capturl.parsers.ParserFixture.TestParser
 import org.parboiled2.ParserInput
 import org.scalatest.{FlatSpec, Matchers}
@@ -18,16 +17,23 @@ class IriParserSpec  extends FlatSpec with Matchers {
   "IriParser" should "parse absolute IRI" in new Fixture {
     val iri = Iri(
       Scheme.HTTP,
-      Authority(new NamedHost("example.com")),
-      Slash(new Segment("path", End)),
-      new Query("query"),
-      new Fragment("fragment")
+      Authority(new Host.NamedHost("example.com")),
+      Path.Slash(new Path.Segment("path", Path.End)),
+      new Query.Part("query", "", Query.Empty),
+      new Fragment.FragmentIdentifier("fragment")
     )
     parse("http://example.com/path?query#fragment") shouldBe iri -> ""
   }
 
   it should "parse relative IRI" in new Fixture {
-
+    val iri = Iri(
+      Scheme.empty,
+      Authority.empty,
+      Slash(new Segment("path", End)),
+      new Query.Part("query", "", Query.Empty),
+      new Fragment.FragmentIdentifier("fragment")
+    )
+    parse("/path?query#fragment") shouldBe iri -> ""
   }
 
 }
