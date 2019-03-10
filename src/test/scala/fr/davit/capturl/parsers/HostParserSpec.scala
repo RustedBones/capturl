@@ -43,6 +43,7 @@ class HostParserSpec extends FlatSpec with Matchers {
     // normalization
     parse("Example.COM/path") shouldBe NamedHost("example.com")  -> "/path"
     parse("ἀῼ") shouldBe NamedHost("ἀῳ")                         -> "" // lower case unicode extended
+    parse("xn--bcher-kva.tld") shouldBe NamedHost("bücher.tld")  -> "" // punycode to unicode
   }
 
 }

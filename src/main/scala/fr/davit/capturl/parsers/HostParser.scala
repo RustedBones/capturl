@@ -1,4 +1,6 @@
 package fr.davit.capturl.parsers
+import java.net.IDN
+
 import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
 import fr.davit.capturl.scaladsl.Host
 import org.parboiled2.CharPredicate._
@@ -86,7 +88,7 @@ trait HostParser extends RichStringBuilding {
   def `ireg-name`: Rule1[NamedHost] = rule {
     clearSB() ~
       (iunreserved | `pct-encoded` | `sub-delims`).* ~
-      push(new NamedHost(sb.toString.toLowerCase))
+      push(new NamedHost(IDN.toUnicode(sb.toString.toLowerCase)))
   }
 
   def ihost: Rule1[Host] = rule {
