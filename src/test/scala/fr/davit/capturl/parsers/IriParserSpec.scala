@@ -36,4 +36,28 @@ class IriParserSpec  extends FlatSpec with Matchers {
     parse("/path?query#fragment") shouldBe iri -> ""
   }
 
+  it should "not normalize empty query" in new Fixture {
+    val iri = Iri(
+      Scheme.HTTP,
+      Authority(new Host.NamedHost("example.com")),
+      Path.Slash(Path.End),
+      new Query.Part("", "", Query.Empty),
+      Fragment.empty
+    )
+
+    parse("http://example.com/?") shouldBe iri -> ""
+  }
+
+  it should "not normalize empty fragment" in new Fixture {
+    val iri = Iri(
+      Scheme.HTTP,
+      Authority(new Host.NamedHost("example.com")),
+      Path.Slash(Path.End),
+      Query.empty,
+      Fragment.Identifier("")
+    )
+
+    parse("http://example.com/#") shouldBe iri -> ""
+  }
+
 }

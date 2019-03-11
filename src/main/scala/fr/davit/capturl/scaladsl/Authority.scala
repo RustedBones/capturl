@@ -38,11 +38,14 @@ object Authority {
 
     case object Empty extends Port {
       override def isEmpty: Boolean = true
+      override def toString: String = ""
     }
 
     final case class Number(value: Int) extends Port {
       require(0 <= value && value < MaxPortNumber, s"Invalid port number '$value'")
       override def isEmpty: Boolean = false
+      override def toString: String = value.toString
+
     }
   }
 
@@ -61,10 +64,12 @@ object Authority {
 
     case object Empty extends UserInfo {
       override def isEmpty: Boolean = true
+      override def toString: String = ""
     }
 
     final case class Credentials private[capturl] (value: String) extends UserInfo {
       override def isEmpty: Boolean = false
+      override def toString: String = value
     }
   }
 }

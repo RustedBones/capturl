@@ -6,7 +6,7 @@ final case class Iri private [capturl] (scheme: Scheme, authority: Authority, pa
 
   override def toString: String = {
     val b = StringBuilder.newBuilder
-    if (scheme.nonEmpty) b.append(scheme.toString)
+    if (scheme.nonEmpty) b.append(s"$scheme://")
     if (authority.nonEmpty) b.append(authority)
     if (path.nonEmpty) b.append(path)
     if (query.nonEmpty) b.append(s"?$query")

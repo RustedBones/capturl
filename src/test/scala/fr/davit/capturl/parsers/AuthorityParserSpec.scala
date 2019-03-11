@@ -49,6 +49,8 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
     parse("example.com:80/path") shouldBe Authority(new NamedHost("example.com"), new Number(80)) -> "/path"
     parse("user:password@example.com/path") shouldBe Authority(new NamedHost("example.com"), userInfo = new Credentials("user:password")) -> "/path"
     parse("user:password@example.com:80/path") shouldBe Authority(new NamedHost("example.com"), new Number(80), new Credentials("user:password")) -> "/path"
+
+    parse("@example.com/path") shouldBe Authority(new NamedHost("example.com"), userInfo = new Credentials("")) -> "/path"
   }
 
 }
