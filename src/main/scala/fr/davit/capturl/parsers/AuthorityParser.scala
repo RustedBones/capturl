@@ -1,6 +1,6 @@
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl.scaladsl.Authority.UserInfo
+import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl.{Authority, Host}
 import org.parboiled2.CharPredicate._
 import org.parboiled2.{Parser, Rule1}
@@ -9,8 +9,6 @@ import scala.util.{Success, Try}
 
 object AuthorityParser {
 
-  val MaxPort = 65535
-
   def apply(userInfo: String): Parser with AuthorityParser = {
     new StringParser(userInfo) with AuthorityParser
   }
@@ -18,11 +16,11 @@ object AuthorityParser {
 
 trait AuthorityParser extends HostParser { this: Parser =>
 
-  def port: Rule1[Int] = rule {
+  def port: Rule1[Port] = rule {
     capture(Digit.+) ~> { s: String =>
       Try(s.toInt) match {
-        case Success(value) if value < AuthorityParser.MaxPort => push(value)
-        case _                                                 => failX(s"Invalid port '$s'")
+        case Success(value) if value < Port.MaxPortNumber => push(Port.Number(value))
+        case _                                            => failX(s"Invalid port number '$s'")
       }
     }
   }
@@ -30,12 +28,12 @@ trait AuthorityParser extends HostParser { this: Parser =>
   def iuserinfo: Rule1[UserInfo] = rule {
     clearSB() ~
       (iunreserved | `pct-encoded` | `sub-delims` | ':' ~ appendSB()).* ~
-      push(new UserInfo(sb.toString))
+      push(new UserInfo.Credentials(sb.toString))
   }
 
   def iauthority: Rule1[Authority] = rule {
-    ((iuserinfo ~ '@').? ~ ihost ~ (':' ~ port).?) ~> { (u: Option[UserInfo], h: Host, p: Option[Int]) =>
-      Authority(h, p.getOrElse(-1), u.getOrElse(UserInfo.empty))
+    ((iuserinfo ~ '@').? ~ ihost ~ (':' ~ port).?) ~> { (u: Option[UserInfo], h: Host, p: Option[Port]) =>
+      Authority(h, p.getOrElse(Port.empty), u.getOrElse(UserInfo.empty))
     }
   }
 }

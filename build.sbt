@@ -35,3 +35,13 @@ lazy val `capturl` = (project in file("."))
       Dependencies.Test.scalaTest
     )
   )
+
+lazy val `capturl-akka-http` = (project in file("akka-http"))
+  .dependsOn(`capturl`)
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.akkaHttpCore,
+      Dependencies.Test.scalaTest
+    )
+  )

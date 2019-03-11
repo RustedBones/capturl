@@ -39,15 +39,13 @@ object Host {
 
     def apply(inetAddress: Inet4Address): IPv4Host = apply(inetAddress.getAddress)
 
-    def apply(bytes: Array[Byte]): IPv4Host = apply(Vector(bytes.map(java.lang.Byte.toUnsignedInt): _*))
+    def apply(bytes: Array[Byte]): IPv4Host = apply(Vector(bytes: _*))
   }
 
-  // internally store bytes as Int because java doe not support unsigned
-  final case class IPv4Host(bytes: immutable.Seq[Int]) extends Host {
+  final case class IPv4Host(bytes: immutable.Seq[Byte]) extends Host {
     require(bytes.length == 4, "bytes array must have length 4")
-    require(bytes.forall(b => 0 <= b && b < 256), "invalid byte value")
 
-    override def address: String = bytes.mkString(".")
+    override def address: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(".")
     override def isIPv4: Boolean = true
     override def toString: String = address
   }
@@ -62,17 +60,15 @@ object Host {
 
     def apply(inetAddress: Inet6Address): IPv6Host = apply(inetAddress.getAddress)
 
-    def apply(bytes: Array[Byte]): IPv6Host = apply(Vector(bytes.map(java.lang.Byte.toUnsignedInt): _*))
+    def apply(bytes: Array[Byte]): IPv6Host = apply(Vector(bytes: _*))
   }
 
-  // internally store bytes as Int because java doe not support unsigned
-  final case class IPv6Host(bytes: immutable.Seq[Int]) extends Host {
+  final case class IPv6Host(bytes: immutable.Seq[Byte]) extends Host {
     require(bytes.length == 16, "bytes array must have length 16")
-    require(bytes.forall(b => 0 <= b && b < 256), "invalid byte value")
 
-    override def address: String = bytes.mkString(":")
+    override def address: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(":")
     override def isIPv6: Boolean = true
-    override def toString: String = bytes.mkString("[", ":", "]")
+    override def toString: String = s"[$address]"
   }
 
   //--------------------------------------------------------------------------------------------------------------------

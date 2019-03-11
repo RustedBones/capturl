@@ -20,7 +20,7 @@ class IriParserSpec  extends FlatSpec with Matchers {
       Authority(new Host.NamedHost("example.com")),
       Path.Slash(new Path.Segment("path", Path.End)),
       new Query.Part("query", "", Query.Empty),
-      new Fragment.FragmentIdentifier("fragment")
+      new Fragment.Identifier("fragment")
     )
     parse("http://example.com/path?query#fragment") shouldBe iri -> ""
   }
@@ -31,7 +31,7 @@ class IriParserSpec  extends FlatSpec with Matchers {
       Authority.empty,
       Slash(new Segment("path", End)),
       new Query.Part("query", "", Query.Empty),
-      new Fragment.FragmentIdentifier("fragment")
+      new Fragment.Identifier("fragment")
     )
     parse("/path?query#fragment") shouldBe iri -> ""
   }

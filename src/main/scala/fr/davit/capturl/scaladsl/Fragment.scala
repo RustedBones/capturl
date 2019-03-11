@@ -16,7 +16,7 @@ object Fragment {
     FragmentParser(fragment).phrase(_.ifragment)
   }
 
-  final case class FragmentIdentifier private[capturl] (value: String) extends Fragment {
+  final case class Identifier private[capturl] (value: String) extends Fragment {
     override def isEmpty: Boolean = false
     override def toString: String = value
   }

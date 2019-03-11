@@ -1,5 +1,5 @@
 package fr.davit.capturl.parsers
-import fr.davit.capturl.scaladsl.Fragment.FragmentIdentifier
+import fr.davit.capturl.scaladsl.Fragment.Identifier
 import fr.davit.capturl.scaladsl.Fragment
 import org.parboiled2.{CharPredicate, Parser, Rule1}
 
@@ -12,7 +12,7 @@ object FragmentParser {
 trait FragmentParser extends RichStringBuilding { this: Parser =>
 
   def ifragment: Rule1[Fragment] = rule {
-    clearSB() ~ (ipchar | CharPredicate('/', '?') ~ appendSB()).* ~ push(new FragmentIdentifier(sb.toString))
+    clearSB() ~ (ipchar | CharPredicate('/', '?') ~ appendSB()).* ~ push(new Identifier(sb.toString))
   }
 
 }
