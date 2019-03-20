@@ -30,27 +30,29 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   "AuthorityParser" should "parse userinfo" in new UserInfoFixture {
-    parse("@host") shouldBe new Credentials("") -> "@host"
-    parse("userinfo@host") shouldBe new Credentials("userinfo") -> "@host"
-    parse("%75%73%65%72%69%6E%66%6F@host") shouldBe new Credentials("userinfo") -> "@host"
+    parse("@host") shouldBe Credentials("") -> "@host"
+    parse("userinfo@host") shouldBe Credentials("userinfo") -> "@host"
+    parse("%75%73%65%72%69%6E%66%6F@host") shouldBe Credentials("userinfo") -> "@host"
   }
 
   it should "parse port" in new PortFixture {
-    parse("12345/path") shouldBe new Number(12345) -> "/path"
+    parse("12345/path") shouldBe Number(12345) -> "/path"
 
     a[ParseError] shouldBe thrownBy(parse("", canThrow = true))
     a[ParseError] shouldBe thrownBy(parse("noport", canThrow = true))
+    a[ParseError] shouldBe thrownBy(parse("-1", canThrow = true))
+    a[ParseError] shouldBe thrownBy(parse("10000000000", canThrow = true))
   }
 
   it should "parse authority" in new AuthorityFixture {
-    parse("") shouldBe Authority(new NamedHost("")) -> ""
-    parse("/path") shouldBe Authority(new NamedHost("")) -> "/path"
-    parse("example.com/path") shouldBe Authority(new NamedHost("example.com")) -> "/path"
-    parse("example.com:80/path") shouldBe Authority(new NamedHost("example.com"), new Number(80)) -> "/path"
-    parse("user:password@example.com/path") shouldBe Authority(new NamedHost("example.com"), userInfo = new Credentials("user:password")) -> "/path"
-    parse("user:password@example.com:80/path") shouldBe Authority(new NamedHost("example.com"), new Number(80), new Credentials("user:password")) -> "/path"
+    parse("") shouldBe Authority(NamedHost("")) -> ""
+    parse("/path") shouldBe Authority(NamedHost("")) -> "/path"
+    parse("example.com/path") shouldBe Authority(NamedHost("example.com")) -> "/path"
+    parse("example.com:80/path") shouldBe Authority(NamedHost("example.com"), Number(80)) -> "/path"
+    parse("user:password@example.com/path") shouldBe Authority(NamedHost("example.com"), userInfo = Credentials("user:password")) -> "/path"
+    parse("user:password@example.com:80/path") shouldBe Authority(NamedHost("example.com"), Number(80), Credentials("user:password")) -> "/path"
 
-    parse("@example.com/path") shouldBe Authority(new NamedHost("example.com"), userInfo = new Credentials("")) -> "/path"
+    parse("@example.com/path") shouldBe Authority(NamedHost("example.com"), userInfo = Credentials("")) -> "/path"
   }
 
 }

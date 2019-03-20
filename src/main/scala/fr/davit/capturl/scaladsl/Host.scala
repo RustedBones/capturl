@@ -3,18 +3,17 @@ package fr.davit.capturl.scaladsl
 import java.net.{Inet4Address, Inet6Address}
 
 import fr.davit.capturl.parsers.HostParser
+import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.collection.immutable
 
-sealed abstract class Host extends fr.davit.capturl.javadsl.Host {
+sealed abstract class Host extends fr.davit.capturl.javadsl.Host with OptionalPart[String] {
 
   // default implementation
   override def isIPv4: Boolean = true
   override def isIPv6: Boolean = false
   override def isNamedHost: Boolean = false
-  override def isEmpty: Boolean = false
-  def nonEmpty: Boolean = !isEmpty
 }
 
 object Host {
@@ -42,12 +41,12 @@ object Host {
     def apply(bytes: Array[Byte]): IPv4Host = apply(Vector(bytes: _*))
   }
 
-  final case class IPv4Host(bytes: immutable.Seq[Byte]) extends Host {
+  final case class IPv4Host(bytes: immutable.Seq[Byte]) extends Host with DefinedPart[String] {
     require(bytes.length == 4, "bytes array must have length 4")
+    override lazy val value: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(".")
 
-    override def address: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(".")
+    override def getAddress: String = value
     override def isIPv4: Boolean = true
-    override def toString: String = address
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -63,34 +62,27 @@ object Host {
     def apply(bytes: Array[Byte]): IPv6Host = apply(Vector(bytes: _*))
   }
 
-  final case class IPv6Host(bytes: immutable.Seq[Byte]) extends Host {
+  final case class IPv6Host(bytes: immutable.Seq[Byte]) extends Host with DefinedPart[String] {
     require(bytes.length == 16, "bytes array must have length 16")
+    override lazy val value: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(":")
 
-    override def address: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(":")
+    override def getAddress: String = value
     override def isIPv6: Boolean = true
-    override def toString: String = s"[$address]"
+    override def toString: String = s"[$value]"
   }
 
   //--------------------------------------------------------------------------------------------------------------------
   // NamedHost
   //--------------------------------------------------------------------------------------------------------------------
-  final case class NamedHost private[capturl] (override val address: String) extends Host {
+  final case class NamedHost(value: String) extends Host with DefinedPart[String] {
+    override def getAddress: String = value
     override def isNamedHost: Boolean = true
-    override def toString: String = address
-  }
-
-  object NamedHost {
-    def apply(address: String): NamedHost = {
-      HostParser(address).phrase(_.`ireg-name`)
-    }
   }
 
   //--------------------------------------------------------------------------------------------------------------------
   // EmptyHost
   //--------------------------------------------------------------------------------------------------------------------
-  case object Empty extends Host {
-    override def address(): String = throw new NoSuchElementException("address for empty host")
-    override def isEmpty: Boolean = true
-    override def toString: String = ""
+  case object Empty extends Host with EmptyPart {
+    override def getAddress: String = throw new NoSuchElementException("address for empty host")
   }
 }

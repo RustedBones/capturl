@@ -36,7 +36,8 @@ trait QueryParser extends RichStringBuilding { this: Parser =>
       val b = Query.newBuilder
       parts.foreach { p =>
         val i = p.prefixLength(_ != '=')
-        b += p.take(i) -> p.drop(i + 1)
+        if (i == p.length) b += p -> None
+        else p.take(i) -> Some(p.drop(i + 1))
       }
       b.result()
     }

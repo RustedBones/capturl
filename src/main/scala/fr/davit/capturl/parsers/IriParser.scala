@@ -1,7 +1,8 @@
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.scaladsl._
-import org.parboiled2.{Parser, Rule1}
+import org.parboiled2.{Parser, Rule1, Rule2, RuleN}
+import shapeless.{Path => _, _}
 
 trait IriParser
     extends SchemeParser
@@ -10,27 +11,23 @@ trait IriParser
     with QueryParser
     with FragmentParser { this: Parser =>
 
-  def `ihier -part`: Rule1[(Authority, Path)] = rule {
-    ("//" ~ iauthority ~ `ipath-abempty`) ~> ((authority: Authority, path: Path) => (authority, path)) |
-      (`ipath-absolute` | `ipath-rootless` | `ipath-empty`) ~> ((path: Path) => (Authority.empty, path))
+  def `ihier -part`: Rule2[Authority, Path] = rule {
+    ("//" ~ iauthority ~ `ipath-abempty`) |
+      (`ipath-absolute` | `ipath-rootless` | `ipath-empty`) ~> ((path: Path) => Authority.empty :: path :: HNil)
   }
 
-  def `iabsolute-part`: Rule1[(Scheme, Authority, Path)] = rule {
-    (scheme ~ ":" ~ `ihier -part`) ~> { (scheme: Scheme, authorityAndPath: (Authority, Path)) =>
-      val (authority, path) = authorityAndPath
-      (scheme, authority, path)
-    }
+  def `iabsolute-part`: RuleN[Scheme :: Authority :: Path :: HNil] = rule {
+    scheme ~ ":" ~ `ihier -part`
   }
 
-  def `irelative-part`: Rule1[(Scheme, Authority, Path)] = rule {
-    ("//" ~ iauthority ~ `ipath-abempty`) ~> ((authority: Authority, path: Path) => (Scheme.empty, authority, path)) |
-      `ipath-absolute` ~> ((path: Path) => (Scheme.empty, Authority.empty, path))
+  def `irelative-part`: RuleN[Scheme :: Authority :: Path :: HNil] = rule {
+    ("//" ~ iauthority ~ `ipath-abempty`) ~> ((authority: Authority, path: Path) => Scheme.empty :: authority :: path :: HNil) |
+      (`ipath-absolute` | `ipath-noscheme` | `ipath-empty`) ~> ((path: Path) => Scheme.empty :: Authority.empty :: path :: HNil)
   }
 
   def IRI: Rule1[Iri] = rule {
     ((`iabsolute-part` | `irelative-part`) ~ ("?" ~ iquery).? ~ ("#" ~ ifragment).?) ~> {
-      (schemeAndAuthorityAndPath: (Scheme, Authority, Path), query: Option[Query], fragment: Option[Fragment]) =>
-        val (scheme, authority, path) = schemeAndAuthorityAndPath
+      (scheme: Scheme, authority: Authority, path: Path, query: Option[Query], fragment: Option[Fragment]) =>
         Iri(scheme, authority, path, query.getOrElse(Query.empty), fragment.getOrElse(Fragment.empty))
     }
   }

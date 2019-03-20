@@ -2,46 +2,54 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.QueryParser
 import org.parboiled2.Parser.DeliveryScheme.Throw
+import fr.davit.capturl.javadsl
+import fr.davit.capturl.javadsl.QueryParameter
 
 import scala.collection.immutable.LinearSeq
-import scala.collection.{LinearSeqOptimized, mutable}
+import scala.collection.{mutable, LinearSeqOptimized}
+import scala.collection.JavaConverters._
 
-sealed trait Query extends LinearSeq[(String, String)] with LinearSeqOptimized[(String, String), Query] {
-  override def newBuilder: mutable.Builder[(String, String), Query] = Query.newBuilder
-  override def toString: String = mkString("&")
+sealed trait Query
+    extends javadsl.Query
+    with LinearSeq[(String, Option[String])]
+    with LinearSeqOptimized[(String, Option[String]), Query] {
+  override def newBuilder: mutable.Builder[(String, Option[String]), Query] = Query.newBuilder
+  override def toString: String                                             = mkString("&")
+
+  /* Java API */
+  override def getParameters(): java.lang.Iterable[QueryParameter] =
+    map { case (k, v) => new QueryParameter(k, v.orNull) }.asJava
 }
 
 object Query {
-  
+
   val empty: Query = Empty
 
   def apply(query: String): Query = {
     QueryParser(query).phrase(_.iquery)
   }
 
-  def apply(query: Seq[(String, String)]): Query = {
+  def apply(query: Seq[(String, Option[String])]): Query = {
     query.foldLeft(empty) { case (q, (k, v)) => Part(k, v, q) }
   }
 
-  def newBuilder: mutable.Builder[(String, String), Query] = new mutable.Builder[(String, String), Query] {
-    val b = Seq.newBuilder[(String, String)]
-    def +=(elem: (String, String)): this.type = { b += elem; this }
-    def clear() = b.clear()
-    def result() = apply(b.result())
-  }
-  
+  def newBuilder: mutable.Builder[(String, Option[String]), Query] =
+    new mutable.Builder[(String, Option[String]), Query] {
+      val b                                             = Seq.newBuilder[(String, Option[String])]
+      def +=(elem: (String, Option[String])): this.type = { b += elem; this }
+      def clear()                                       = b.clear()
+      def result()                                      = apply(b.result())
+    }
+
   //--------------------------------------------------------------------------------------------------------------------
   // Part
   //--------------------------------------------------------------------------------------------------------------------
-  final case class Part private[capturl] (key: String, value: String, override val tail: Query) extends Query {
-    override def isEmpty: Boolean = false
-    override def head: (String, String) = key -> value
-    override def toString: String = if (value.isEmpty) key else s"$key=$value"
-  }
-
-  object Part {
-    def apply(key: String, value: String, tail: Query): Part = {
-      new Part(QueryParser(key).phrase(_.part), QueryParser(value).phrase(_.part), tail)
+  final case class Part(key: String, value: Option[String], override val tail: Query) extends Query {
+    override def isEmpty: Boolean               = false
+    override def head: (String, Option[String]) = key -> value
+    override def toString: String = value match {
+      case Some(v) => s"$key=$v"
+      case None    => key
     }
   }
 
@@ -49,10 +57,10 @@ object Query {
   // Empty
   //--------------------------------------------------------------------------------------------------------------------
   case object Empty extends Query {
-    override def isEmpty: Boolean = true
-    override def head: (String, String) = throw new NoSuchElementException("head of empty query")
-    override def tail: Query = throw new UnsupportedOperationException("tail of empty query")
-    override def toString: String = ""
+    override def isEmpty: Boolean               = true
+    override def head: (String, Option[String]) = throw new NoSuchElementException("head of empty query")
+    override def tail: Query                    = throw new UnsupportedOperationException("tail of empty query")
+    override def toString: String               = ""
   }
-  
+
 }

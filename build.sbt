@@ -31,6 +31,7 @@ lazy val `capturl` = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      Dependencies.javaCompat,
       Dependencies.parboiled,
       Dependencies.Test.scalaTest
     )

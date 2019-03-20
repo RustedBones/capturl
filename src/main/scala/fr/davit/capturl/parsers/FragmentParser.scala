@@ -12,7 +12,7 @@ object FragmentParser {
 trait FragmentParser extends RichStringBuilding { this: Parser =>
 
   def ifragment: Rule1[Fragment] = rule {
-    clearSB() ~ (ipchar | CharPredicate('/', '?') ~ appendSB()).* ~ push(new Identifier(sb.toString))
+    clearSB() ~ (ipchar | CharPredicate('/', '?') ~ appendSB()).* ~ push(Identifier(sb.toString))
   }
 
 }

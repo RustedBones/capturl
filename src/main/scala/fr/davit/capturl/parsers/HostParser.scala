@@ -88,7 +88,7 @@ trait HostParser extends RichStringBuilding {
   def `ireg-name`: Rule1[NamedHost] = rule {
     clearSB() ~
       (iunreserved | `pct-encoded` | `sub-delims`).* ~
-      push(new NamedHost(IDN.toUnicode(sb.toString.toLowerCase)))
+      push(NamedHost(IDN.toUnicode(sb.toString.toLowerCase)))
   }
 
   def ihost: Rule1[Host] = rule {

@@ -1,27 +1,26 @@
 package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.SchemeParser
+import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
-final case class Scheme private[capturl] (name: String) {
-  def isEmpty: Boolean  = name.isEmpty
-  def nonEmpty: Boolean = !isEmpty
-
-  override def toString: String = name
-}
+sealed trait Scheme extends OptionalPart[String]
 
 object Scheme {
 
-  private var registry: Map[Scheme, Int] = Map.empty
+  val empty: Scheme = Empty
 
-  def register(scheme: Scheme, defaultPort: Int): Unit = {
+  case object Empty extends Scheme with EmptyPart
+  case class Protocol(value: String) extends Scheme with DefinedPart[String]
+
+  private var registry: Map[Scheme, Authority.Port.Number] = Map.empty
+
+  def register(protocol: Scheme, defaultPort: Int): Unit = {
     require(
-      !registry.contains(scheme),
-      s"Scheme ${scheme.name} is already registered with default port ${registry(scheme)}")
-    registry += scheme -> defaultPort
+      !registry.contains(protocol),
+      s"Scheme $protocol is already registered with default port ${registry(protocol)}")
+    registry += protocol -> Authority.Port.Number(defaultPort)
   }
-
-  val empty = new Scheme("")
 
   def apply(scheme: String): Scheme = {
     SchemeParser(scheme).phrase(_.scheme)
@@ -33,7 +32,7 @@ object Scheme {
     s
   }
 
-  def defaultPort(scheme: Scheme): Option[Int] = registry.get(scheme)
+  def defaultPort(scheme: Scheme): Option[Authority.Port.Number] = registry.get(scheme)
 
   val Data   = Scheme("data")
   val File   = Scheme("file")

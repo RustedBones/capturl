@@ -28,7 +28,7 @@ trait AuthorityParser extends HostParser { this: Parser =>
   def iuserinfo: Rule1[UserInfo] = rule {
     clearSB() ~
       (iunreserved | `pct-encoded` | `sub-delims` | ':' ~ appendSB()).* ~
-      push(new UserInfo.Credentials(sb.toString))
+      push(UserInfo.Credentials(sb.toString))
   }
 
   def iauthority: Rule1[Authority] = rule {

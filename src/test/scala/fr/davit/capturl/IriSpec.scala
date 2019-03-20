@@ -1,14 +1,14 @@
 package fr.davit.capturl
 
+import fr.davit.capturl.scaladsl.Scheme
 import org.scalatest.{FlatSpec, Matchers}
 
 class IriSpec extends FlatSpec with Matchers {
 
-  //  object RenderedIrl {
-  //    def apply(value: String): String = Iri(value).render
-  //  }
 
-  "Irl" should "fix schemes" in {
+  // tests extracted from chromium project
+  ignore should "fix schemes" in {
+
     // URLs with unknown schemes should be treated as path URLs, even when they
     // have things like "://".
     //    RenderedIrl("something:///HOSTNAME.com/") shouldBe "something:///HOSTNAME.com/"

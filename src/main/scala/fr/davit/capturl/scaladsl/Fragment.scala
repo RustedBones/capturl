@@ -1,12 +1,10 @@
 package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.FragmentParser
+import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
-sealed trait Fragment {
-  def isEmpty: Boolean
-  def nonEmpty: Boolean = !isEmpty
-}
+sealed trait Fragment extends OptionalPart[String]
 
 object Fragment {
 
@@ -16,13 +14,6 @@ object Fragment {
     FragmentParser(fragment).phrase(_.ifragment)
   }
 
-  final case class Identifier private[capturl] (value: String) extends Fragment {
-    override def isEmpty: Boolean = false
-    override def toString: String = value
-  }
-
-  case object Empty extends Fragment {
-    override def isEmpty: Boolean = true
-    override def toString: String = ""
-  }
+  case object Empty extends Fragment with EmptyPart
+  final case class Identifier(value: String) extends Fragment with DefinedPart[String]
 }

@@ -2,7 +2,7 @@ package fr.davit.capturl.javadsl;
 
 public abstract class Host {
 
-    public abstract String address();
+    public abstract String getAddress();
 
     public abstract boolean isEmpty();
     public abstract boolean isIPv4();

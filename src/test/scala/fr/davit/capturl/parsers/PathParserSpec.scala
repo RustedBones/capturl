@@ -15,16 +15,17 @@ class PathParserSpec extends FlatSpec with Matchers {
 
   "PathParser" should "parse path" in new Fixture {
     parse("/?query") shouldBe Slash(End)                                                                   -> "?query"
-    parse("/absolute/path?query") shouldBe Slash(new Segment("absolute", Slash(new Segment("path", End)))) -> "?query"
-    parse("relative/path?query") shouldBe new Segment("relative", Slash(new Segment("path", End)))         -> "?query"
+    parse("?query") shouldBe End                                                                           -> "?query"
+    parse("/absolute/path?query") shouldBe Slash(Segment("absolute", Slash(Segment("path", End)))) -> "?query"
+    parse("relative/path?query") shouldBe Segment("relative", Slash(Segment("path", End)))         -> "?query"
 
     // normalization
-    parse("?query") shouldBe Slash(End)                                                            -> "?query"
-    parse("/one/./path?query") shouldBe Slash(new Segment("one", Slash(new Segment("path", End)))) -> "?query"
-    parse("/one/../path?query") shouldBe Slash(new Segment("path", End))                           -> "?query"
-    parse("/../path?query") shouldBe Slash(new Segment("path", End))                               -> "?query"
-    parse("./path?query") shouldBe new Segment("path", End)                                        -> "?query"
-    parse("../path?query") shouldBe new Segment("..", Slash(new Segment("path", End)))             -> "?query"
+    parse("/one//path?query") shouldBe Slash(Segment("one", Slash(Segment("path", End))))  -> "?query"
+    parse("/one/./path?query") shouldBe Slash(Segment("one", Slash(Segment("path", End)))) -> "?query"
+    parse("/one/../path?query") shouldBe Slash(Segment("path", End))                           -> "?query"
+    parse("/../path?query") shouldBe Slash(Segment("path", End))                               -> "?query"
+    parse("./path?query") shouldBe Segment("path", End)                                        -> "?query"
+    parse("../path?query") shouldBe Segment("..", Slash(Segment("path", End)))             -> "?query"
   }
 
 }
