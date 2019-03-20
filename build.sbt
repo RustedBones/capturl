@@ -29,3 +29,20 @@ lazy val commonSettings = Seq(
 
 lazy val `capturl` = (project in file("."))
   .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.javaCompat,
+      Dependencies.parboiled,
+      Dependencies.Test.scalaTest
+    )
+  )
+
+lazy val `capturl-akka-http` = (project in file("akka-http"))
+  .dependsOn(`capturl`)
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.akkaHttpCore,
+      Dependencies.Test.scalaTest
+    )
+  )
