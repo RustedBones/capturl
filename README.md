@@ -1,5 +1,8 @@
 # capturl
 
+[![Build Status](https://travis-ci.org/RustedBones/capturl.svg?branch=master)](https://travis-ci.org/RustedBones/capturl)
+[![Software License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=flat)](LICENSE)
+
 Capturl is a Scala/Java library that provide parsers and models to work with Internationalized Resource Identifier aka 
 [IRIs](https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier).
 
