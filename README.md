@@ -10,6 +10,14 @@ The implementation is strongly inspired by the great [`akka-http`](https://githu
 [Uri model](https://doc.akka.io/docs/akka-http/current/common/uri-model.html) with modularity and simplicity in mind.
 
 
+## Setup
+
+Add to your `build.sbt`:
+
+```scala
+libraryDependencies += "fr.davit" %% "capturl" % <version>
+```
+
 ## Parsers
 
 All the `apply`/`create` methods accepting String input will be validated against 
@@ -43,6 +51,11 @@ Those are the IRI normalization steps:
     - empty path for absolute, and scheme relative IRI is replaced by root
 - General
     - all encoded characters are decoded
+
+### TODO
+
+- improve error message
+- provide relax parsers
 
 
 ## capturl-akka-http
