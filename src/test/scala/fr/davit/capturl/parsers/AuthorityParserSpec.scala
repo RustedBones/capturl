@@ -38,10 +38,18 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   it should "parse port" in new PortFixture {
     parse("12345/path") shouldBe Number(12345) -> "/path"
 
-    a[ParseError] shouldBe thrownBy(parse("", canThrow = true))
-    a[ParseError] shouldBe thrownBy(parse("noport", canThrow = true))
-    a[ParseError] shouldBe thrownBy(parse("-1", canThrow = true))
-    a[ParseError] shouldBe thrownBy(parse("10000000000", canThrow = true))
+    parseError("") shouldBe """Unexpected end of input, expected port (line 1, column 1):
+                              |
+                              |^""".stripMargin
+
+    parseError("noport") shouldBe """Invalid input 'n', expected port (line 1, column 1):
+                                    |noport
+                                    |^""".stripMargin
+
+    // TODO improve this error message
+    parseError("10000000000") shouldBe """Unexpected end of input, expected port (line 1, column 12):
+                                         |10000000000
+                                         |           ^""".stripMargin
   }
 
   it should "parse authority" in new AuthorityFixture {

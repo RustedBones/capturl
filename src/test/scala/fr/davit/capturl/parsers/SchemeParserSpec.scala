@@ -19,7 +19,12 @@ class SchemeParserSpec extends FlatSpec with Matchers {
 
     parse("HTTP://example.com") shouldBe Scheme.HTTP -> "://example.com"
 
-    a[ParseError] shouldBe thrownBy(parse("", canThrow = true))
-    a[ParseError] shouldBe thrownBy(parse("$invalid", canThrow = true))
+    parseError("") shouldBe """Unexpected end of input, expected scheme (line 1, column 1):
+                              |
+                              |^""".stripMargin
+
+    parseError("$invalid") shouldBe """Invalid input '$', expected scheme (line 1, column 1):
+                                      |$invalid
+                                      |^""".stripMargin
   }
 }

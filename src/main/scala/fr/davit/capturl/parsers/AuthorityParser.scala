@@ -20,7 +20,7 @@ trait AuthorityParser extends HostParser { this: Parser =>
     capture(Digit.+) ~> { s: String =>
       Try(s.toInt) match {
         case Success(value) if value < Port.MaxPortNumber => push(Port.Number(value))
-        case _                                            => failX(s"Invalid port number '$s'")
+        case _                                            => failX("port")
       }
     }
   }
@@ -32,8 +32,8 @@ trait AuthorityParser extends HostParser { this: Parser =>
   }
 
   def iauthority: Rule1[Authority] = rule {
-    ((iuserinfo ~ '@').? ~ ihost ~ (':' ~ port).?) ~> { (u: Option[UserInfo], h: Host, p: Option[Port]) =>
-      Authority(h, p.getOrElse(Port.empty), u.getOrElse(UserInfo.empty))
+    (atomic(iuserinfo ~ '@').?.named("userinfo") ~ atomic(ihost).named("host") ~ atomic(':' ~ port).?.named("port")) ~> {
+      (u: Option[UserInfo], h: Host, p: Option[Port]) => Authority(h, p.getOrElse(Port.empty), u.getOrElse(UserInfo.empty))
     }
   }
 }

@@ -20,17 +20,29 @@ trait ParserFixture[T] {
 
   def createParser(input: ParserInput): TestParser[T]
 
-  def parse(data: String, canThrow: Boolean = false): (T, String) = {
+  private def run(data: String): Either[ParseError, (T, String)] = {
     val parser = createParser(data)
-
     try {
       val result = parser.rule.run()
-      val rest = data.drop(parser.cursor)
-      result -> rest
+      val rest   = data.drop(parser.cursor)
+      Right(result -> rest)
     } catch {
-      case e: ParseError if !canThrow => Assertions.fail(parser.formatError(e, DebugFormatter))
+      case e: ParseError => Left(e)
     }
   }
 
+  def parse(data: String): (T, String) = {
+    run(data) match {
+      case Right(success) => success
+      case Left(error)    => Assertions.fail(DebugFormatter.format(error, data))
+    }
+  }
+
+  def parseError(data: String): String = {
+    run(data) match {
+      case Left(error)    => error.format(data)
+      case Right(success) => Assertions.fail(s"ParseError expected but got $success")
+    }
+  }
 
 }

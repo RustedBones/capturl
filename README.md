@@ -54,7 +54,6 @@ Those are the IRI normalization steps:
 
 ### TODO
 
-- improve error message
 - provide relax parsers
 
 

@@ -101,7 +101,6 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   it should "not drop empty fragment" in new Fixture {
-
     val iri = Iri(
       Scheme.HTTP,
       Authority(Host.NamedHost("example.com")),
@@ -111,6 +110,20 @@ class IriParserSpec extends FlatSpec with Matchers {
     )
 
     parse("http://example.com/#") shouldBe iri -> ""
+  }
+
+  it should "reject invalid IRIs" in new Fixture {
+    parseError("http://user{info@example.com/") shouldBe """Invalid input "{i", expected ~, host, port, absolute or empty path, query, fragment or 'EOI' (line 1, column 12):
+                                                           |http://user{info@example.com/
+                                                           |           ^""".stripMargin
+
+    parseError("http://example.com:-1/") shouldBe """Invalid input ":-1/", expected ~, host, port, absolute or empty path, query, fragment or 'EOI' (line 1, column 19):
+                                                    |http://example.com:-1/
+                                                    |                  ^""".stripMargin
+
+    parseError("http://example.com/path with space") shouldBe """Invalid input " w", expected absolute or empty path, query, fragment or 'EOI' (line 1, column 24):
+                                                                |http://example.com/path with space
+                                                                |                       ^""".stripMargin
   }
 
 }
