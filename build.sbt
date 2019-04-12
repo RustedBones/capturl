@@ -4,7 +4,8 @@ val repo     = "capturl"
 
 lazy val commonSettings = Seq(
   organization := "fr.davit",
-  version := "0.1.0-SNAPSHOT",
+  version := "0.1.1-SNAPSHOT",
+  // disable cross build. project does not compile yet on scala 2.11
   // crossScalaVersions := Seq("2.11.12", "2.12.8"),
   scalaVersion := "2.12.8", // (ThisBuild / crossScalaVersions).value.last,
   Compile / compile / scalacOptions ++= Settings.scalacOptions(scalaVersion.value),

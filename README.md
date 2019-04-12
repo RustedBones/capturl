@@ -1,6 +1,7 @@
 # capturl
 
 [![Build Status](https://travis-ci.org/RustedBones/capturl.svg?branch=master)](https://travis-ci.org/RustedBones/capturl)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.davit/capturl_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.davit/capturl_2.12)
 [![Software License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=flat)](LICENSE)
 
 Capturl is a Scala/Java library that provide parsers and models to work with Internationalized Resource Identifier aka 
@@ -55,6 +56,7 @@ Those are the IRI normalization steps:
 ### TODO
 
 - provide relax parsers
+- support scala 2.11
 
 
 ## capturl-akka-http
