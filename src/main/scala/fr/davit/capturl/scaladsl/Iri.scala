@@ -3,6 +3,9 @@ package fr.davit.capturl.scaladsl
 import java.util.Optional
 
 import fr.davit.capturl.javadsl
+import fr.davit.capturl.parsers.IriParser
+import org.parboiled2.Parser.DeliveryScheme.Throw
+
 import scala.compat.java8.OptionConverters._
 
 
@@ -52,5 +55,12 @@ object Iri {
     val normalizedAuthority = normalizeAuthority(scheme, authority)
     val normalizedPath = normalizePath(scheme, authority, path)
     new Iri(scheme, normalizedAuthority, normalizedPath, query, fragment)
+  }
+
+  def apply(iri: String): Iri = {
+    val rawIri = IriParser(iri).phrase(_.IRI)
+    val normalizedAuthority = normalizeAuthority(rawIri.scheme, rawIri.authority)
+    val normalizedPath = normalizePath(rawIri.scheme, rawIri.authority, rawIri.path)
+    rawIri.copy(authority = normalizedAuthority, path = normalizedPath)
   }
 }

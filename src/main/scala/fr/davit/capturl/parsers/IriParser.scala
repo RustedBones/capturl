@@ -4,6 +4,12 @@ import fr.davit.capturl.scaladsl._
 import org.parboiled2.{Parser, Rule1, Rule2, RuleN}
 import shapeless.{Path => _, _}
 
+object IriParser {
+  def apply(iri: String): Parser with IriParser = {
+    new StringParser(iri) with IriParser
+  }
+}
+
 trait IriParser
     extends SchemeParser
     with AuthorityParser

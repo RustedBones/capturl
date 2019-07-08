@@ -5,9 +5,9 @@ val repo     = "capturl"
 lazy val commonSettings = Seq(
   organization := "fr.davit",
   version := "0.1.1-SNAPSHOT",
-  // disable cross build. project does not compile yet on scala 2.11
-  // crossScalaVersions := Seq("2.11.12", "2.12.8"),
-  scalaVersion := "2.12.8", // (ThisBuild / crossScalaVersions).value.last,
+  // disable cross build. project does not compile yet on scala 2.11 and 2.13
+  // crossScalaVersions := Seq("2.12.8", "2.13.0"),
+  scalaVersion := "2.12.8", // crossScalaVersions.value.last,
   Compile / compile / scalacOptions ++= Settings.scalacOptions(scalaVersion.value),
   homepage := Some(url(s"https://github.com/$username/$repo")),
   licenses += "APACHE" -> url(s"https://github.com/$username/$repo/blob/master/LICENSE"),
@@ -32,6 +32,7 @@ lazy val `capturl` = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      Dependencies.contextual,
       Dependencies.javaCompat,
       Dependencies.parboiled,
       Dependencies.Test.scalaTest
