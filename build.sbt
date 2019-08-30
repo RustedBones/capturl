@@ -44,8 +44,8 @@ lazy val `capturl-contextual` = (project in file("contextual"))
     crossScalaVersions := Seq( "2.12.8"), // no support fo 2.11
     scalaVersion := crossScalaVersions.value.last,
     libraryDependencies ++= Seq(
-      Dependencies.scalaReflect(scalaVersion.value),
       Dependencies.contextual,
+      Dependencies.Provided.scalaReflect(scalaVersion.value),
       Dependencies.Test.scalaTest
     )
   )
