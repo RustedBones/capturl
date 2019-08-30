@@ -22,10 +22,10 @@ sealed trait Path extends javadsl.Path with LinearSeq[String] with LinearSeqOpti
 
   def endsWithSlash: Boolean = {
     @tailrec def check(path: Path): Boolean = path match {
-      case End ⇒ false
-      case Slash(End) ⇒ true
-      case Slash(tail) ⇒ check(tail)
-      case Segment(_, tail) ⇒ check(tail)
+      case End              => false
+      case Slash(End)       => true
+      case Slash(tail)      => check(tail)
+      case Segment(_, tail) => check(tail)
     }
     check(this)
   }
@@ -36,7 +36,7 @@ sealed trait Path extends javadsl.Path with LinearSeq[String] with LinearSeqOpti
   override def getSegments: java.lang.Iterable[String] = segments.asJava
 
   override def newBuilder: mutable.Builder[String, Path] = Path.newBuilder
-  override def toString: String                          = mkString
+  override def toString: String = mkString
 }
 
 object Path {
@@ -49,10 +49,10 @@ object Path {
   }
 
   def newBuilder: mutable.Builder[String, Path] = new mutable.Builder[String, Path] {
-    val b                           = List.newBuilder[String]
+    val b                                        = List.newBuilder[String]
     def +=(elem: String): this.type = { b += elem; this }
-    def clear()                     = b.clear()
-    def result()                    = build(b.result().reverse)
+    def clear()                                  = b.clear()
+    def result()                                 = build(b.result().reverse)
 
     @tailrec
     def build(segments: List[String], path: Option[PathElement] = None): Path =

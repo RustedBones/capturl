@@ -38,7 +38,7 @@ object Host {
 
     def apply(inetAddress: Inet4Address): IPv4Host = apply(inetAddress.getAddress)
 
-    def apply(bytes: Array[Byte]): IPv4Host = apply(Vector(bytes: _*))
+    def apply(bytes: Array[Byte]): IPv4Host = apply(bytes.toIndexedSeq)
   }
 
   final case class IPv4Host(bytes: immutable.Seq[Byte]) extends Host with DefinedPart[String] {
@@ -59,7 +59,7 @@ object Host {
 
     def apply(inetAddress: Inet6Address): IPv6Host = apply(inetAddress.getAddress)
 
-    def apply(bytes: Array[Byte]): IPv6Host = apply(Vector(bytes: _*))
+    def apply(bytes: Array[Byte]): IPv6Host = apply(bytes.toIndexedSeq)
   }
 
   final case class IPv6Host(bytes: immutable.Seq[Byte]) extends Host with DefinedPart[String] {

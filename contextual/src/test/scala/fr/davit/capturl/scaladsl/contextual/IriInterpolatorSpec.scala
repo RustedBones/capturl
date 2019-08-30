@@ -2,8 +2,8 @@ package fr.davit.capturl.scaladsl.contextual
 
 import fr.davit.capturl.scaladsl.Authority.Port
 import fr.davit.capturl.scaladsl._
-import org.scalatest.{FlatSpec, Matchers}
 import fr.davit.capturl.scaladsl.contextual.iri._
+import org.scalatest.{FlatSpec, Matchers}
 
 class IriInterpolatorSpec extends FlatSpec with Matchers {
 
@@ -15,11 +15,10 @@ class IriInterpolatorSpec extends FlatSpec with Matchers {
   val fragment = Fragment.Identifier("identifier")
 
   "IriInterpolator" should "interpolate Iri from string" in {
-    iri"http://localhost:8080/path?key" shouldBe Iri(scheme, authority, path, query, fragment)
+    iri"http://localhost:8080/path?key#identifier" shouldBe Iri(scheme, authority, path, query, fragment)
   }
 
-  it should "interpolate Iri from classes" in {
-    iri"$scheme://$authority/$path?$query#$fragment" shouldBe Iri(scheme, authority, path, query, fragment)
+  it should "not compile when interpolating invalid iris" in {
+    """ val myIri = iri"http://user{info@example.com/" """ shouldNot compile
   }
-
 }

@@ -1,6 +1,5 @@
 package fr.davit.capturl
 
-import fr.davit.capturl.scaladsl.Scheme
 import org.scalatest.{FlatSpec, Matchers}
 
 class IriSpec extends FlatSpec with Matchers {
