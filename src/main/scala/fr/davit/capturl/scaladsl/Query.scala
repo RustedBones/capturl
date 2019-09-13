@@ -14,7 +14,7 @@ sealed trait Query
     with LinearSeq[(String, Option[String])]
     with LinearSeqOptimized[(String, Option[String]), Query] {
   override def newBuilder: mutable.Builder[(String, Option[String]), Query] = Query.newBuilder
-  override def toString: String                                             = mkString("&")
+  override def toString: String = mkString("&")
 
   /* Java API */
   override def getParameters(): java.lang.Iterable[QueryParameter] =
@@ -35,10 +35,10 @@ object Query {
 
   def newBuilder: mutable.Builder[(String, Option[String]), Query] =
     new mutable.Builder[(String, Option[String]), Query] {
-      val b                                             = Seq.newBuilder[(String, Option[String])]
+      val b                                                          = Seq.newBuilder[(String, Option[String])]
       def +=(elem: (String, Option[String])): this.type = { b += elem; this }
-      def clear()                                       = b.clear()
-      def result()                                      = apply(b.result())
+      def clear()                                                    = b.clear()
+      def result()                                                   = apply(b.result())
     }
 
   //--------------------------------------------------------------------------------------------------------------------

@@ -53,13 +53,47 @@ Those are the IRI normalization steps:
 - General
     - all encoded characters are decoded
 
+### IRI string interpolation
+
+Add to your `build.sbt`:
+
+```scala
+libraryDependencies += "fr.davit" %% "capturl-contextual" % <version>
+```
+
+This sub module provides compile time string interpolation to create IRIs:
+
+```scala
+val iri = iri"http://localhost:8080/path?key#identifier"
+```
+
+If iri string is not valid, the scala compiler will notify you:
+
+```scala
+val iri = iri"http://user{info@example.com/"
+```
+
+```
+[error] Invalid IRI http://user{info@example.com/
+[error]     iri"http://user{info@example.com/"
+[error]         ^
+[error] one error found
+```
+
+
 ### TODO
 
 - provide relax parsers
-- support scala 2.11
-
+- support holes in interpolation 
+- support scala 2.13
 
 ## capturl-akka-http
+
+Add to your `build.sbt`:
+
+```scala
+libraryDependencies += "fr.davit" %% "capturl-akka-http" % <version>
+```
 
 This sub module provides all the necessary implicits in [`UriConverters`](/src/main/scala/fr/davit/capturl/akka/http/UriConverters.scala) 
 to go from an `Iri` to the akka `Uri` model.

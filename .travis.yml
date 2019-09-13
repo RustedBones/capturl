@@ -1,5 +1,10 @@
 language: scala
+dist: trusty
 jdk: oraclejdk8
 sudo: false
 scala:
+  - 2.11.12
   - 2.12.8
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test capturl-akka-http/test
+  - if [[ $TRAVIS_SCALA_VERSION == 2.12.* ]]; then sbt ++$TRAVIS_SCALA_VERSION capturl-contextual/test; fi

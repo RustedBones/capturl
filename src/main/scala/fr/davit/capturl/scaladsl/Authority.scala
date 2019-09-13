@@ -20,7 +20,7 @@ final case class Authority(host: Host, port: Port = Port.empty, userInfo: UserIn
   override def getUserInfo: Optional[String] = userInfo.toOption.asJava
 
   override def toString: String = {
-    val b = StringBuilder.newBuilder
+    val b = new StringBuilder()
     if (userInfo.nonEmpty) b.append(s"$userInfo@")
     b.append(host)
     if (port.nonEmpty) b.append(s":$port")
