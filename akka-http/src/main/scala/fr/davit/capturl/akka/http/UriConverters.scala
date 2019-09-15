@@ -31,13 +31,7 @@ trait UriConverters {
     Uri.Authority(authority.host, authority.port, authority.userInfo)
   }
 
-  implicit def pathConverter[T <: Path](path: T): Uri.Path = {
-    path.foldRight(Uri.Path.Empty: Uri.Path) {
-      case ("/", p)                        => Uri.Path.Slash(p)
-      case (str, p: Uri.Path.SlashOrEmpty) => Uri.Path.Segment(str, p)
-      case _                               => throw new Exception("Invalid path construction")
-    }
-  }
+  implicit def pathConverter[T <: Path](path: T): Uri.Path = Uri.Path(path.toString) // TODO avoid akka parsing
 
   implicit def queryConverter[T <: Query](query: T): Uri.Query = {
     val b = Uri.Query.newBuilder

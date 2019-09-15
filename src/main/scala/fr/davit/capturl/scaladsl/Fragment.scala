@@ -11,7 +11,7 @@ object Fragment {
   val empty: Fragment = Empty
 
   def apply(fragment: String): Fragment = {
-    FragmentParser(fragment).phrase(_.ifragment)
+    if (fragment.isEmpty) Fragment.Empty else FragmentParser(fragment).phrase(_.ifragment)
   }
 
   case object Empty extends Fragment with EmptyPart

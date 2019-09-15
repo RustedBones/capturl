@@ -9,7 +9,7 @@ import scala.collection.immutable.LinearSeq
 import scala.collection.{mutable, LinearSeqOptimized}
 import scala.collection.JavaConverters._
 
-sealed trait Query
+sealed abstract class Query
     extends javadsl.Query
     with LinearSeq[(String, Option[String])]
     with LinearSeqOptimized[(String, Option[String]), Query] {
@@ -19,6 +19,7 @@ sealed trait Query
   /* Java API */
   override def getParameters(): java.lang.Iterable[QueryParameter] =
     map { case (k, v) => new QueryParameter(k, v.orNull) }.asJava
+  override def asScala(): Query = this
 }
 
 object Query {
@@ -44,7 +45,7 @@ object Query {
   //--------------------------------------------------------------------------------------------------------------------
   // Part
   //--------------------------------------------------------------------------------------------------------------------
-  final case class Part(key: String, value: Option[String], override val tail: Query) extends Query {
+  final case class Part(key: String, value: Option[String] = None, override val tail: Query = Empty) extends Query {
     override def isEmpty: Boolean               = false
     override def head: (String, Option[String]) = key -> value
     override def toString: String = value match {

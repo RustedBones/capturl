@@ -1,89 +1,68 @@
 package fr.davit.capturl.scaladsl
 
-import fr.davit.capturl.parsers.PathParser
-import fr.davit.capturl.javadsl
-import fr.davit.capturl.scaladsl.Path.{End, Segment, Slash}
-import org.parboiled2.Parser.DeliveryScheme.Throw
+import java.nio.file.{Path => JPath, Paths => JPaths}
 
-import scala.annotation.tailrec
-import scala.collection.{mutable, LinearSeq, LinearSeqOptimized}
+import fr.davit.capturl.javadsl
+import fr.davit.capturl.parsers.PathParser
+import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.collection.JavaConverters._
 
-sealed trait Path extends javadsl.Path with LinearSeq[String] with LinearSeqOptimized[String, Path] {
-  def isAbsolute: Boolean = startsWithSlash
+class Path private (private val jpath: JPath) extends javadsl.Path {
+
+  private[capturl] def this(path: String) = this(JPaths.get(path))
+
+  private lazy val normalizedPath = jpath.normalize()
+
+  override def isEmpty: Boolean = normalizedPath == Path.empty.jpath
+  def nonEmpty: Boolean         = !isEmpty
+
+  def isAbsolute: Boolean = jpath.isAbsolute
   def isRelative: Boolean = !isAbsolute
 
-  def startsWithSlash: Boolean = this match {
-    case Slash(_) => true
-    case _        => false
-  }
-  def startsWithSegment: Boolean = !startsWithSlash && nonEmpty
+  def relativize(path: Path): Path = new Path(jpath.relativize(path.jpath))
 
-  def endsWithSlash: Boolean = {
-    @tailrec def check(path: Path): Boolean = path match {
-      case End              => false
-      case Slash(End)       => true
-      case Slash(tail)      => check(tail)
-      case Segment(_, tail) => check(tail)
-    }
-    check(this)
+  def resolve(path: Path): Path = {
+    if (jpath.endsWith(Path.slash.jpath)) new Path(jpath.resolve(path.jpath))
+    else new Path(jpath.resolveSibling(path.jpath))
   }
 
-  def segments: Seq[String] = filter(_ != "/")
+  def / : Path = /(".")
+
+  def /(segment: String): Path = {
+    val a = new Path(jpath.resolve(segment))
+    a
+  }
+
+  def segments: Seq[String] = jpath.iterator().asScala.map(_.toString).toSeq
 
   /** Java API */
-  override def getSegments: java.lang.Iterable[String] = segments.asJava
+  override def appendSlash(): javadsl.Path                  = /
+  override def appendSegment(segment: String): javadsl.Path = /(segment)
+  override def getSegments: java.lang.Iterable[String]      = segments.asJava
+  override def relativize(path: javadsl.Path): javadsl.Path = relativize(path.asScala)
+  override def resolve(path: javadsl.Path): javadsl.Path    = resolve(path.asScala)
+  override def asScala: Path                                = this
 
-  override def newBuilder: mutable.Builder[String, Path] = Path.newBuilder
-  override def toString: String = mkString
+  override def toString: String = normalizedPath.toString
+
+  override def equals(o: Any): Boolean = o match {
+    case that: Path => that.normalizedPath == this.normalizedPath
+    case _          => false
+  }
+
+  override def hashCode(): Int = this.normalizedPath.hashCode()
 }
 
 object Path {
 
-  val empty: Path = End
-  val root: Path  = Slash(End)
+  val empty: Path              = new Path(JPaths.get(""))
+  val slash: Path              = new Path(JPaths.get("/"))
+  def root: Path               = slash
+  def / : Path                 = root
+  def /(segment: String): Path = new Path(JPaths.get(s"/$segment"))
 
   def apply(path: String): Path = {
     PathParser(path).phrase(_.ipath)
-  }
-
-  def newBuilder: mutable.Builder[String, Path] = new mutable.Builder[String, Path] {
-    val b                                        = List.newBuilder[String]
-    def +=(elem: String): this.type = { b += elem; this }
-    def clear()                                  = b.clear()
-    def result()                                 = build(b.result().reverse)
-
-    @tailrec
-    def build(segments: List[String], path: Option[PathElement] = None): Path =
-      segments match {
-        case Nil               => path.getOrElse(Slash(End)) // in the empty case return root ("/".split("/"): Array())
-        case "" :: Nil         => path.map(Slash).getOrElse(End) // in the empty case return end ("".split("/"): Array(""))
-        case "" :: tail        => build(tail, path) // collapse double slash
-        case "." :: tail       => build(tail, path) // collapse current folder
-        case ".." :: "" :: Nil => build("" :: Nil, path) // special case when '..' is just after root
-        case ".." :: _ :: tail => build(tail, path) // collapse parent folder
-        case segment :: tail   => build(tail, Some(Segment(segment, path.map(Slash).getOrElse(End))))
-      }
-  }
-
-  sealed trait PathElement extends Path
-
-  sealed trait PathDelimiter extends Path
-
-  case object End extends PathElement with PathDelimiter {
-    override def isEmpty: Boolean = true
-    override def head: String     = throw new NoSuchElementException("head of empty path")
-    override def tail: Path       = throw new UnsupportedOperationException("tail of empty path")
-  }
-
-  final case class Slash(override val tail: PathElement) extends PathDelimiter {
-    override def isEmpty: Boolean = false
-    override def head: String     = "/"
-  }
-
-  final case class Segment private[capturl] (override val head: String, override val tail: PathDelimiter)
-      extends PathElement {
-    override def isEmpty: Boolean = false
   }
 }

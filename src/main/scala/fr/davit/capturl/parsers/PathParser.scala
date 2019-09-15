@@ -12,17 +12,6 @@ object PathParser {
 trait PathParser extends RichStringBuilding {
   this: Parser =>
 
-  def build(): Path = {
-    val str = sb.toString
-    if (str.isEmpty) {
-      Path.empty
-    } else {
-      val b = Path.newBuilder
-      b ++= sb.toString.split("/")
-      b.result()
-    }
-  }
-
   def isegment: Rule0 = rule {
     ipchar.*
   }
@@ -36,23 +25,23 @@ trait PathParser extends RichStringBuilding {
   }
 
   def `ipath-abempty`: Rule1[Path] = rule {
-    clearSB() ~ ('/' ~ appendSB() ~ isegment).* ~ push(build())
+    clearSB() ~ ('/' ~ appendSB() ~ isegment).* ~ push(new Path(sb.toString))
   }
 
   def `ipath-absolute`: Rule1[Path] = rule {
-    clearSB() ~ '/' ~ appendSB() ~ (`isegment-nz` ~ ('/' ~ appendSB() ~ isegment).*).? ~ push(build())
+    clearSB() ~ '/' ~ appendSB() ~ (`isegment-nz` ~ ('/' ~ appendSB() ~ isegment).*).? ~ push(new Path(sb.toString))
   }
 
   def `ipath-noscheme`: Rule1[Path] = rule {
-    clearSB() ~ `isegment-nz-nc ` ~ ('/' ~ appendSB() ~ isegment).* ~ push(build())
+    clearSB() ~ `isegment-nz-nc ` ~ ('/' ~ appendSB() ~ isegment).* ~ push(new Path(sb.toString))
   }
 
   def `ipath-rootless`: Rule1[Path] = rule {
-    clearSB() ~ `isegment-nz` ~ ('/' ~ appendSB() ~ isegment).* ~ push(build())
+    clearSB() ~ `isegment-nz` ~ ('/' ~ appendSB() ~ isegment).* ~ push(new Path(sb.toString))
   }
 
   def `ipath-empty`: Rule1[Path] = rule {
-    clearSB() ~ &(!ipchar) ~ push(build())
+    clearSB() ~ &(!ipchar) ~ push(new Path(sb.toString))
   }
 
   def ipath: Rule1[Path] = rule {
