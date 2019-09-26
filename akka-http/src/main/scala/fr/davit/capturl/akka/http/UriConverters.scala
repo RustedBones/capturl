@@ -6,6 +6,8 @@ import akka.http.scaladsl.model.Uri
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl._
 
+import scala.annotation.tailrec
+
 trait UriConverters {
 
   implicit def schemeConverter[T <: Scheme](scheme: T): String = scheme.toString
@@ -31,7 +33,20 @@ trait UriConverters {
     Uri.Authority(authority.host, authority.port, authority.userInfo)
   }
 
-  implicit def pathConverter[T <: Path](path: T): Uri.Path = Uri.Path(path.toString) // TODO avoid akka parsing
+  implicit def pathConverter(path: Path): Uri.Path = {
+    @tailrec def uriPathBuilder(segments: List[String], p: Uri.Path.SlashOrEmpty): Uri.Path = segments match {
+      case Nil                               => p
+      case segment :: Nil if path.isAbsolute => Uri.Path.Slash(Uri.Path.Segment(segment, p))
+      case segment :: Nil                    => Uri.Path.Segment(segment, p)
+      case segment :: _ :: tail              => uriPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(segment, p)))
+    }
+
+    if (path.isEmpty)  {
+      Uri.Path.Empty
+    } else {
+      uriPathBuilder(path.segments.reverse.toList, if (path.isDirectory) Uri.Path.SingleSlash else Uri.Path.Empty)
+    }
+  }
 
   implicit def queryConverter[T <: Query](query: T): Uri.Query = {
     val b = Uri.Query.newBuilder

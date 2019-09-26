@@ -4,13 +4,12 @@ object Dependencies {
 
   object Versions {
     val akkaHttp   = "10.1.8"
+    val akka       = "2.5.25"
     val contextual = "1.2.1"
     val javaCompat = "0.9.0"
     val parboiled  = "2.1.8"
     val scalaTest  = "3.0.8"
   }
-
-
 
   val akkaHttpCore = "com.typesafe.akka"      %% "akka-http-core"     % Versions.akkaHttp
   val contextual   = "com.propensive"         %% "contextual"         % Versions.contextual
@@ -22,6 +21,7 @@ object Dependencies {
   }
 
   object Test {
-    val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
+    val scalaTest  = "org.scalatest"     %% "scalatest"   % Versions.scalaTest % "test"
+    val akkaStream = "com.typesafe.akka" %% "akka-stream" % Versions.akka      % "test"
   }
 }

@@ -17,10 +17,17 @@ class PathSpec extends FlatSpec with Matchers {
     Path("test").isAbsolute shouldBe false
   }
 
+  it should "tell if it is a directory" in {
+    Path.empty.isDirectory shouldBe false
+    Path.root.isDirectory shouldBe true
+    Path("test").isDirectory shouldBe false
+    Path("test")./.isDirectory shouldBe true
+  }
+
   it should "provide segments" in {
     Path.empty.segments shouldBe Seq("")
     Path.root.segments shouldBe Seq.empty[String]
-    (Path./("segment1") / "segment2" / "segment3" /).segments shouldBe Seq("segment1", "segment2", "segment3", ".")
+    (Path./("segment1") / "segment2" / "segment3" /).segments shouldBe Seq("segment1", "segment2", "segment3")
     (Path("segment1") / "segment2" / "segment3").segments shouldBe Seq("segment1", "segment2", "segment3")
   }
 
