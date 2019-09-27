@@ -35,15 +35,15 @@ class IriSpec extends FlatSpec with Matchers {
     val base = Iri(
       Scheme.HTTP,
       Authority(testHost),
-      Path./("directory") / "file",
+      Path.Resource("directory/file"),
       Query.Part("key"),
       Fragment.Identifier("identifier")
     )
 
     val otherScheme = Scheme.HTTPS
     val otherAuthority = Authority(Host.NamedHost("other.com"))
-    val otherAbsolutePath = Path./("otherDirectory") / "otherFile"
-    val otherRelativePath = Path("otherFile")
+    val otherAbsolutePath = Path.Resource("otherDirectory/otherFile")
+    val otherRelativePath = Path.Resource("otherFile")
     val otherQuery = Query.Part("otherKey")
     val otherFragment = Fragment.Identifier("otherIdentifier")
 

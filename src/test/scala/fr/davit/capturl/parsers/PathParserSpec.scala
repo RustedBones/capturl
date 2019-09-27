@@ -13,19 +13,32 @@ class PathParserSpec extends FlatSpec with Matchers {
   }
 
   "PathParser" should "parse path" in new Fixture {
+    val res = parse("/one/../path?query")
+
     parse("/?query") shouldBe Path.root                                -> "?query"
     parse("?query") shouldBe Path.empty                                -> "?query"
-    parse("/absolute/path?query") shouldBe Path./("absolute") / "path" -> "?query"
-    parse("relative/path?query") shouldBe Path("relative") / "path"    -> "?query"
-    parse("directory/?query") shouldBe Path("directory")./             -> "?query"
+    parse("/absolute/path?query") shouldBe Path.Resource("/absolute/path") -> "?query"
+    parse("relative/path?query") shouldBe Path.Resource("relative/path")   -> "?query"
+    parse("directory/?query") shouldBe Path.Directory("directory")     -> "?query"
 
     // normalization
-    parse("/one//path?query") shouldBe Path./("one") / "path"  -> "?query"
-    parse("/one/./path?query") shouldBe Path./("one") / "path" -> "?query"
-    parse("/one/../path?query") shouldBe Path./("path")        -> "?query"
-    parse("/../path?query") shouldBe Path./("path")            -> "?query"
-    parse("./path?query") shouldBe Path("path")                -> "?query"
-    parse("../path?query") shouldBe Path("..") / "path"        -> "?query"
+    parse("/one//path?query") shouldBe Path.Resource("/one/path")       -> "?query"
+    parse("/one//path/?query") shouldBe Path.Directory("/one/path") -> "?query"
+
+    parse("/one/./path?query") shouldBe Path.Resource("/one/path")       -> "?query"
+    parse("/one/./path/?query") shouldBe Path.Directory("/one/path") -> "?query"
+
+    parse("/one/../path?query") shouldBe Path.Resource("/path")       -> "?query"
+    parse("/one/../path/?query") shouldBe Path.Directory("/path") -> "?query"
+
+    parse("/../path?query") shouldBe Path.Resource("/path")       -> "?query"
+    parse("/../path/?query") shouldBe Path.Directory("/path") -> "?query"
+
+    parse("./path?query") shouldBe Path.Resource("path")       -> "?query"
+    parse("./path/?query") shouldBe Path.Directory("path") -> "?query"
+
+    parse("../path?query") shouldBe Path.Resource("../path")       -> "?query"
+    parse("../path/?query") shouldBe Path.Directory("../path") -> "?query"
   }
 
 }

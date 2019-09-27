@@ -14,11 +14,10 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   "IriParser" should "parse absolute IRI" in new Fixture {
-
     val iri = Iri(
       Scheme.HTTP,
       Authority(Host.NamedHost("example.com")),
-      Path./("path"),
+      Path.Resource("/path"),
       Query.Part("query", None, Query.Empty),
       Fragment.Identifier("fragment")
     )
@@ -30,7 +29,7 @@ class IriParserSpec extends FlatSpec with Matchers {
     val iri = Iri(
       Scheme.empty,
       Authority(Host.NamedHost("example.com")),
-      Path./("path"),
+      Path.Resource("/path"),
       Query.Part("query", None, Query.Empty),
       Fragment.Identifier("fragment")
     )
@@ -42,7 +41,7 @@ class IriParserSpec extends FlatSpec with Matchers {
     val iri = Iri(
       Scheme.empty,
       Authority.empty,
-      Path./("path"),
+      Path.Resource("/path"),
       Query.Part("query", None, Query.Empty),
       Fragment.Identifier("fragment")
     )

@@ -10,7 +10,7 @@ class IriInterpolatorSpec extends FlatSpec with Matchers {
 
   val scheme = Scheme.Protocol("http")
   val authority = Authority(Host.NamedHost("localhost"), Port.Number(8080))
-  val path = Path./("path")
+  val path = Path.Resource("/path")
   val query = Query.Part("key", None, Query.Empty)
   val fragment = Fragment.Identifier("identifier")
 

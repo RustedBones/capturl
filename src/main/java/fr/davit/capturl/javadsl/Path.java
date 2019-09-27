@@ -15,13 +15,15 @@ public abstract class Path {
 
     public abstract boolean isRelative();
 
-    public abstract boolean isDirectory();
+    public abstract boolean isResource();
 
-    public abstract boolean isFile();
+    public abstract boolean isDirectory();
 
     public abstract Path relativize(Path path);
 
     public abstract Path resolve(Path path);
+
+    public abstract Path normalize();
 
     public abstract Path appendSlash();
 
