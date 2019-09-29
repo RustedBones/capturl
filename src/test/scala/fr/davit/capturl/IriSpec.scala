@@ -1,6 +1,7 @@
 package fr.davit.capturl
 
 import fr.davit.capturl.scaladsl.Authority.Port
+import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -35,15 +36,15 @@ class IriSpec extends FlatSpec with Matchers {
     val base = Iri(
       Scheme.HTTP,
       Authority(testHost),
-      Path.Resource("directory/file"),
+      Segment("directory", Slash(Segment("file"))),
       Query.Part("key"),
       Fragment.Identifier("identifier")
     )
 
     val otherScheme = Scheme.HTTPS
     val otherAuthority = Authority(Host.NamedHost("other.com"))
-    val otherAbsolutePath = Path.Resource("otherDirectory/otherFile")
-    val otherRelativePath = Path.Resource("otherFile")
+    val otherAbsolutePath = Slash(Segment("otherDirectory", Slash(Segment("otherFile"))))
+    val otherRelativePath = Segment("otherFile")
     val otherQuery = Query.Part("otherKey")
     val otherFragment = Fragment.Identifier("otherIdentifier")
 

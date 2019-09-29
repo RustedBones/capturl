@@ -4,6 +4,7 @@ import java.net.IDN
 
 import akka.http.scaladsl.model.Uri
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
+import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash}
 import fr.davit.capturl.scaladsl._
 
 import scala.annotation.tailrec
@@ -34,18 +35,16 @@ trait UriConverters {
   }
 
   implicit def pathConverter(path: Path): Uri.Path = {
-    @tailrec def uriPathBuilder(segments: List[String], p: Uri.Path.SlashOrEmpty): Uri.Path = segments match {
-      case Nil                               => p
-      case segment :: Nil if path.isAbsolute => Uri.Path.Slash(Uri.Path.Segment(segment, p))
-      case segment :: Nil                    => Uri.Path.Segment(segment, p)
-      case segment :: _ :: tail              => uriPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(segment, p)))
+    @tailrec def uriPathBuilder(p: Path, akkaPath: Uri.Path.SlashOrEmpty): Uri.Path = p match {
+      case Empty                        => akkaPath
+      case Segment(value, Empty)        => Uri.Path.Segment(value, akkaPath)
+      case Segment(value, Slash(Empty)) => Uri.Path.Segment(value, Uri.Path.Slash(akkaPath))
+      case Slash(Segment(value, tail))  => uriPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(value, akkaPath)))
+      case Slash(tail)                  => uriPathBuilder(tail, Uri.Path.Slash(akkaPath))
+      case _                            => throw new Exception("Invalid path conversion")
     }
 
-    if (path.isEmpty)  {
-      Uri.Path.Empty
-    } else {
-      uriPathBuilder(path.segments.reverse.toList, if (path.isDirectory) Uri.Path.SingleSlash else Uri.Path.Empty)
-    }
+    uriPathBuilder(path, Uri.Path.Empty)
   }
 
   implicit def queryConverter[T <: Query](query: T): Uri.Query = {

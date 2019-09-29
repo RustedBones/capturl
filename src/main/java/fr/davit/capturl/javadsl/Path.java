@@ -11,13 +11,15 @@ public abstract class Path {
     //------------------------------------------------------------------------------------------------------------------
     public abstract boolean isEmpty();
 
+    public abstract int length();
+
+    public abstract boolean startsWithSlash();
+
+    public abstract boolean startsWithSegment();
+
     public abstract boolean isAbsolute();
 
     public abstract boolean isRelative();
-
-    public abstract boolean isResource();
-
-    public abstract boolean isDirectory();
 
     public abstract Path relativize(Path path);
 

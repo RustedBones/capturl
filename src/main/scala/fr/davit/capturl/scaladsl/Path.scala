@@ -1,46 +1,90 @@
 package fr.davit.capturl.scaladsl
 
-import java.nio.file.{Path => JPath, Paths => JPaths}
-
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.PathParser
-import fr.davit.capturl.scaladsl.Path.{Directory, Empty, Resource, Segment}
+import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash}
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
 sealed abstract class Path extends javadsl.Path {
 
-  // underlying java path
-  private[capturl] def jpath: JPath
+  type Head
+
+  def head: Head
+  def tail: Path
 
   def nonEmpty: Boolean = !isEmpty
 
-  def isAbsolute: Boolean = jpath.isAbsolute
-  def isRelative: Boolean = !isAbsolute
+  override def isAbsolute: Boolean = startsWithSlash
+  override def isRelative: Boolean = !isAbsolute
 
-  def relativize(path: Path): Path
-  def resolve(path: Path): Path
-  override def normalize(): Path
+  def startsWith(that: Path): Boolean
 
-  // this is only exposed for the builders since this does not normalize the path
-  private[capturl] def ++(path: Path): Path = path match {
-    case Empty        => this
-    case f: Resource  => Resource(JPaths.get(toString ++ f.toString))
-    case d: Directory => Directory(JPaths.get(toString ++ d.toString))
+  def endsWithSlash: Boolean = {
+    @tailrec def rec(path: Path): Boolean = path match {
+      case Empty             => false
+      case Slash(Path.Empty) => true
+      case Slash(tail)       => rec(tail)
+      case Segment(_, tail)  => rec(tail)
+    }
+    rec(this)
   }
 
-  def /(segment: String): Path = /(PathParser(segment).phrase(_.`isegment`))
-
-  def /(segment: Segment): Path = segment match {
-    case Segment.Empty  => Directory(jpath)
-    case Segment.Parent => Directory(jpath.resolve(segment.jpath).normalize())
-    case _              => Resource(jpath.resolve(segment.jpath).normalize())
+  final def endsWith(suffix: String, ignoreTrailingSlash: Boolean = false): Boolean = {
+    @tailrec def rec(path: Path, lastSegment: String = ""): Boolean =
+      path match {
+        case Empty               => lastSegment.endsWith(suffix)
+        case Slash(Path.Empty)   => ignoreTrailingSlash && lastSegment.endsWith(suffix)
+        case Slash(tail)         => rec(tail)
+        case Segment(head, tail) => rec(tail, head)
+      }
+    rec(this)
   }
 
-  def / : Path = /(Segment.Empty)
+  def ::(segment: String): Path
 
-  def segments: Seq[String] = jpath.iterator().asScala.map(_.toString).toSeq
+  def +(pathString: String): Path = this ++ Path(pathString)
+
+  def ++(suffix: Path): Path
+
+  def reverse: Path = reverseAndPrependTo(Path.Empty)
+
+  protected def reverseAndPrependTo(prefix: Path): Path
+
+  def / : Path = this ++ Slash(Path.Empty)
+
+  def /(segment: String): Path = this ++ Slash(PathParser(segment).phrase(_.isegment))
+
+  def ?/(segment: String): Path = if (this.endsWithSlash) this + segment else this / segment
+
+  def relativize(path: Path): Path = ???
+
+  def resolve(path: Path): Path = {
+    def replaceLastSegment(p: Path, replacement: Path): Path = p match {
+      case Path.Empty | Segment(_, Path.Empty) => replacement
+      case Segment(string, tail)               => string :: replaceLastSegment(tail, replacement)
+      case Slash(tail)                         => Slash(replaceLastSegment(tail, replacement))
+    }
+    if (path.isAbsolute) path else replaceLastSegment(this, path).normalize()
+  }
+
+  def normalize(): Path = {
+    def collapse(p: Path): Path = p match {
+      case Empty                                         => p
+      case Slash(Segment("", Slash(tail)))               => Slash(collapse(tail)) // collapse double slash
+      case Slash(Segment("..", Slash(Segment(_, tail)))) => collapse(tail) // navigate to parent
+      case Segment(".", Slash(tail))                     => collapse(tail) // remove current segment
+      case Segment(".", tail)                            => collapse(tail) // remove current segment
+      case Segment("", tail)                             => collapse(tail) // remove empty segment
+      case Slash(tail)                                   => Slash(collapse(tail))
+      case Segment(head, tail)                           => Segment(head, collapse(tail))
+    }
+    collapse(reverse).reverse
+  }
+
+  def segments: List[String]
 
   /** Java API */
   override def appendSlash(): javadsl.Path                  = /
@@ -50,100 +94,67 @@ sealed abstract class Path extends javadsl.Path {
   override def resolve(path: javadsl.Path): javadsl.Path    = resolve(path.asScala)
   override def asScala: Path                                = this
 
-  override def toString: String = jpath.toString
+  override def toString: String = {
+    val sb      = new StringBuilder()
+    var p: Path = this
+    while (p.nonEmpty) {
+      sb.append(p.head.toString)
+      p = p.tail
+    }
+    sb.result()
+  }
 }
 
 object Path {
 
-  private val jEmpty  = JPaths.get("")
-  private val jRoot   = JPaths.get("/")
-  private val jParent = JPaths.get("..")
-
   val empty: Path = Empty
-  val slash: Path = Directory(jRoot)
+  val slash: Path = Slash()
   def root: Path  = slash
 
-  object Segment {
-    val Empty: Segment  = Segment(jEmpty)
-    val Parent: Segment = Segment(jParent)
-
-    def apply(segment: String): Segment = Segment(JPaths.get(segment).normalize())
-  }
-
-  final case class Segment(jpath: JPath) extends AnyVal {
-
-    def toPath: Path = jpath match {
-      case `jEmpty` => empty
-      case _        => Resource(jpath)
-    }
-  }
-
   case object Empty extends Path {
-    override private[capturl] val jpath: JPath = JPaths.get("")
-
-    override def isEmpty: Boolean = true
-
-    override def isResource: Boolean  = false
-    override def isDirectory: Boolean = false
-
-    override def relativize(path: Path): Path = path
-    override def resolve(path: Path): Path    = path
-    override def normalize(): Path            = this
-
-    override def /(segment: Segment): Path = slash ++ segment.toPath
+    override type Head = Nothing
+    override def head: Head                                        = throw new NoSuchElementException("head of empty path")
+    override def tail: Path                                        = throw new UnsupportedOperationException("tail of empty path")
+    override def isEmpty: Boolean                                  = true
+    override def length: Int                                       = 0
+    override def startsWithSlash: Boolean                          = false
+    override def startsWithSegment: Boolean                        = false
+    override def startsWith(that: Path): Boolean                   = that.isEmpty
+    override protected def reverseAndPrependTo(prefix: Path): Path = prefix
+    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment)
+    override def ++(suffix: Path): Path                            = suffix
+    override def segments: List[String]                            = Nil
   }
 
-  object Resource {
-
-    def apply(name: String): Resource = {
-      val jpath = JPaths.get(name).normalize()
-      require(jpath != Empty.jpath, "Resource must not be empty")
-      Resource(jpath)
-    }
+  final case class Slash(override val tail: Path = Empty) extends Path {
+    override type Head = Char
+    override def head: Head                                  = '/'
+    override def isEmpty: Boolean                            = false
+    override def length: Int                                 = tail.length + 1
+    override def startsWithSlash: Boolean                    = true
+    override def startsWithSegment: Boolean                  = false
+    override def startsWith(that: Path): Boolean             = that.isEmpty || that.startsWithSlash && tail.startsWith(that.tail)
+    override protected def reverseAndPrependTo(prefix: Path) = tail.reverseAndPrependTo(Slash(prefix))
+    override def ::(segment: String): Path                   = PathParser(segment).phrase(_.isegment).copy(tail = this)
+    override def ++(suffix: Path): Path                      = Slash(tail ++ suffix)
+    override def segments: List[String]                      = tail.segments
   }
 
-  final case class Resource(override private[capturl] val jpath: JPath) extends Path {
-    override def isEmpty: Boolean = false
-
-    override def isResource: Boolean  = true
-    override def isDirectory: Boolean = false
-
-    override def relativize(path: Path): Path = Resource(jpath.relativize(path.jpath))
-    override def resolve(path: Path): Path = path match {
-      case Empty        => this
-      case f: Resource  => Resource(jpath.resolveSibling(f.jpath).normalize())
-      case d: Directory => Directory(jpath.resolveSibling(d.jpath).normalize())
+  final case class Segment(override val head: String, override val tail: Path = Empty) extends Path {
+    override type Head = String
+    override def isEmpty: Boolean           = false
+    override def length: Int                = tail.length + 1
+    override def startsWithSlash: Boolean   = false
+    override def startsWithSegment: Boolean = true
+    override def startsWith(that: Path): Boolean = that match {
+      case Segment(`head`, t) => tail.startsWith(t)
+      case Segment(h, Empty)  => head.startsWith(h)
+      case x                  => x.isEmpty
     }
-    override def normalize(): Path = Resource(jpath.normalize())
-  }
-
-  object Directory {
-
-    def apply(name: String): Directory = {
-      val jpath = JPaths.get(name).normalize()
-      require(jpath != Empty.jpath, "Directory must not be empty")
-      Directory(jpath)
-    }
-  }
-
-  final case class Directory(override private[capturl] val jpath: JPath) extends Path {
-    def isRoot: Boolean = jpath == jRoot
-
-    override def isEmpty: Boolean = false
-
-    override def isResource: Boolean  = false
-    override def isDirectory: Boolean = true
-
-    override def relativize(path: Path): Path = Directory(jpath.relativize(path.jpath).normalize())
-    override def resolve(path: Path): Path = path match {
-      case Empty        => this
-      case f: Resource  => Resource(jpath.resolve(f.jpath).normalize())
-      case d: Directory => Directory(jpath.resolve(d.jpath).normalize())
-    }
-    override def normalize(): Path = Directory(jpath.normalize())
-
-    // java normalization collapses the trailing slash on directories
-    override def toString: String = if (isRoot) "/" else jpath.toString + "/"
+    override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(head :: prefix)
+    override def ::(segment: String): Path                         = PathParser(segment + head).phrase(_.isegment).copy(tail = tail)
+    override def ++(suffix: Path): Path                            = head :: (tail ++ suffix)
+    override def segments: List[String]                            = head :: tail.segments
   }
 
   def apply(path: String): Path = {

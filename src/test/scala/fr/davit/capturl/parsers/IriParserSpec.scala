@@ -1,6 +1,7 @@
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.parsers.ParserFixture.TestParser
+import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
 import org.parboiled2.ParserInput
 import org.scalatest.{FlatSpec, Matchers}
@@ -17,7 +18,7 @@ class IriParserSpec extends FlatSpec with Matchers {
     val iri = Iri(
       Scheme.HTTP,
       Authority(Host.NamedHost("example.com")),
-      Path.Resource("/path"),
+      Slash(Segment("path")),
       Query.Part("query", None, Query.Empty),
       Fragment.Identifier("fragment")
     )
@@ -29,7 +30,7 @@ class IriParserSpec extends FlatSpec with Matchers {
     val iri = Iri(
       Scheme.empty,
       Authority(Host.NamedHost("example.com")),
-      Path.Resource("/path"),
+      Slash(Segment("path")),
       Query.Part("query", None, Query.Empty),
       Fragment.Identifier("fragment")
     )
@@ -41,7 +42,7 @@ class IriParserSpec extends FlatSpec with Matchers {
     val iri = Iri(
       Scheme.empty,
       Authority.empty,
-      Path.Resource("/path"),
+      Slash(Segment("path")),
       Query.Part("query", None, Query.Empty),
       Fragment.Identifier("fragment")
     )
@@ -83,31 +84,6 @@ class IriParserSpec extends FlatSpec with Matchers {
     )
 
     parse("http://example.com") shouldBe iri -> ""
-  }
-
-  it should "not drop empty query" in new Fixture {
-
-    val iri = Iri(
-      Scheme.HTTP,
-      Authority(Host.NamedHost("example.com")),
-      Path.root,
-      Query.Part("", None, Query.Empty),
-      Fragment.empty
-    )
-
-    parse("http://example.com/?") shouldBe iri -> ""
-  }
-
-  it should "not drop empty fragment" in new Fixture {
-    val iri = Iri(
-      Scheme.HTTP,
-      Authority(Host.NamedHost("example.com")),
-      Path.root,
-      Query.empty,
-      Fragment.Identifier("")
-    )
-
-    parse("http://example.com/#") shouldBe iri -> ""
   }
 
   it should "reject invalid IRIs" in new Fixture {
