@@ -48,5 +48,7 @@ class PathSpec extends FlatSpec with Matchers {
     Path("/directory/file").resolve(Path("otherFile")) shouldBe Slash(Segment("directory", Slash(Segment("otherFile"))))
     Path("relative/file").resolve(Path("otherFile")) shouldBe Segment("relative", Slash(Segment("otherFile")))
     Path("/directory1/directory2/").resolve(Path("../otherFile")) shouldBe Slash(Segment("directory1", Slash(Segment("otherFile"))))
+    Path.root.resolve(Path("../otherFile")) shouldBe Slash(Segment("otherFile"))
+    Path("relative/").resolve(Path("../otherFile")) shouldBe Segment("otherFile")
   }
 }
