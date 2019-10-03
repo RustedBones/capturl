@@ -28,8 +28,10 @@ class IriSpec extends FlatSpec with Matchers {
   }
 
   it should "normalize path" in {
+    Iri(Scheme.File, path = Segment("..")) shouldBe Iri(Scheme.File, path = Path.root)
     Iri(Scheme.File) shouldBe Iri(Scheme.File, path = Path.root)
     Iri(authority = Authority(testHost)) shouldBe Iri(authority = Authority(testHost), path = Path.root)
+    Iri(Scheme.File, path = Segment("file")) shouldBe Iri(Scheme.File, path = Slash(Segment("file")))
   }
 
   it should "resolve iris" in {

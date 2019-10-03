@@ -22,8 +22,7 @@ sealed abstract class Iri private[capturl] extends javadsl.Iri {
   }
 
   private lazy val normalizedPath: Path = {
-    if ((scheme.nonEmpty || authority.nonEmpty) && path.isEmpty) Path.root
-    else path
+    if (scheme.nonEmpty || authority.nonEmpty) Path.root.resolve(path) else path
   }
 
   def isAbsolute: Boolean = scheme.nonEmpty

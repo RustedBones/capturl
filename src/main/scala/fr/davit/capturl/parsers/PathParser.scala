@@ -26,7 +26,8 @@ trait PathParser extends RichStringBuilding {
   }
 
   def `ipath-abempty`: Rule1[Path] = rule {
-    push(Path.empty) ~ ('/' ~ isegment ~> ((p: Path, s: Segment) => p ++ Slash(s))).*
+    // construct in reverse for better performance
+    push(Path.empty) ~ ('/' ~ isegment ~> ((p: Path, s: Segment) => s ++ Slash(p))).* ~> ((p: Path) => p.reverse)
   }
 
   def `ipath-absolute`: Rule1[Path] = rule {

@@ -2,7 +2,7 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.PathParser
-import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash}
+import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash, SlashOrEmpty}
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.annotation.tailrec
@@ -59,40 +59,75 @@ sealed abstract class Path extends javadsl.Path {
 
   def ?/(segment: String): Path = if (this.endsWithSlash) this + segment else this / segment
 
-  def relativize(path: Path): Path = ???
+  def relativize(path: Path): Path = {
+
+    @tailrec def parentPath(src: Path, dst: Path = Empty): Path = src match {
+      case Empty                   => dst // end destination
+      case Segment(_, Empty)       => dst // end destination
+      case Segment(_, Slash(tail)) => parentPath(tail, Segment("..", Slash(dst)))
+      case Slash(tail)             => parentPath(tail) // this should not happen
+    }
+
+    @tailrec def rec(base: Path, rel: Path): Path = (base, rel) match {
+      case (Empty, _)                   => rel // match all the base
+      case (Segment(_, Empty), _)       => rel // match all the base except trailing segment
+      case (b, Empty)                   => parentPath(b) // match all rel
+      case (b, Segment(segment, Empty)) => parentPath(b, Segment(segment)) // match all rel except trailing segment
+      case (b, r) if b.head == r.head   => rec(b.tail, r.tail)
+      case _                            => path // no match, can't relativize
+    }
+
+    rec(this, path)
+  }
 
   def resolve(path: Path): Path = {
     if (path.isAbsolute) {
       path
     } else {
-      def resolveParent(reversedBase: Path) = (reversedBase, path) match {
-        case (Slash(Empty), Segment("..", Empty))                         => Slash() // parent against root
-        case (Slash(Empty), Segment("..", Slash(tail)))                   => Slash(tail) // parent against root
-        case (Slash(Segment(_, Empty)), Segment("..", Slash(tail)))       => tail // parent against relative folder
-        case (Slash(Segment(_, Slash(base))), Segment("..", Slash(tail))) => base.reverseAndPrependTo(Slash(tail))
-        case (Slash(Segment(_, base)), Segment("..", Empty))              => base.reverseAndPrependTo(Slash(tail))
-        case _                                                            => reversedBase.reverseAndPrependTo(path)
-      }
-
       reverse match {
-        case Segment(_, tail) => resolveParent(tail) // drop last segment
-        case reversed         => resolveParent(reversed)
+        case Segment(_, tail) => tail.reverseAndPrependTo(path).normalize()
+        case reversed         => reversed.reverseAndPrependTo(path).normalize()
       }
     }
   }
 
   def normalize(): Path = {
-    @tailrec def rec(p: Path, normalized: Path = Empty): Path = p match {
-      case Empty                                         => normalized
-      case Segment("..", Slash(Empty))                   => if (normalized.isEmpty) Slash() else normalized
-      case Slash(Segment("", Slash(tail)))               => rec(tail, Slash(normalized)) // collapse double slash
-      case Slash(Segment("..", Slash(Segment(_, tail)))) => rec(tail, normalized) // navigate to parent
-      case Segment(".", Slash(tail))                     => rec(tail, normalized) // remove current segment
-      case Segment("" | ".", tail)                       => rec(tail, normalized) // remove current segment
-      case Slash(tail)                                   => rec(tail, Slash(normalized))
-      case Segment(segment, tail)                        => rec(tail, Segment(segment, normalized))
+    // find suspicious segments that would need normalization
+    @tailrec def hasSuspiciousSegment(p: Path): Boolean = p match {
+      case Empty                       => false
+      case Segment("" | "." | "..", _) => true
+      case _                           => hasSuspiciousSegment(p.tail)
     }
-    rec(reverse)
+
+    // remove slash when possible
+    def collapseSlash(p: Path): Path = p match {
+      case Slash(tail) if tail.nonEmpty => tail
+      case _                            => p
+    }
+
+    @tailrec def process(input: Path, output: SlashOrEmpty = Empty): Path = input match {
+      case Slash(tail) => process(tail, Slash(output))
+      case Segment("" | ".", tail) =>
+        process(collapseSlash(tail), output)
+      case Segment("..", tail) =>
+        val parent = output match {
+          case Empty                       => Slash(Segment(".."))
+          case p @ Slash(Segment("..", _)) => Slash(Segment("..", p))
+          case Slash(Segment(_, Empty))    => Empty
+          case Slash(Segment(_, p))        => p
+          case Slash(_)                    => output
+        }
+        process(collapseSlash(tail), parent)
+      case Segment(string, Slash(tail)) => process(tail, Slash(Segment(string, output)))
+      case Segment(string, Empty)       => Segment(string, output).reverse
+      case Empty                        => output.reverse
+    }
+
+    if (hasSuspiciousSegment(this)) {
+      if (isAbsolute) process(tail, Slash()) else process(this)
+    } else {
+      this
+    }
   }
 
   def segments: List[String]
@@ -118,40 +153,17 @@ sealed abstract class Path extends javadsl.Path {
 
 object Path {
 
-  val empty: Path = Empty
-  val slash: Path = Slash()
-  def root: Path  = slash
+  val empty: Path   = Empty
+  val slash: Path   = Slash()
+  def root: Path    = slash
+  def / : Path      = slash
+  def /(path: Path) = Slash(path)
 
-  case object Empty extends Path {
-    override type Head = Nothing
-    override def head: Head                                        = throw new NoSuchElementException("head of empty path")
-    override def tail: Path                                        = throw new UnsupportedOperationException("tail of empty path")
-    override def isEmpty: Boolean                                  = true
-    override def length: Int                                       = 0
-    override def startsWithSlash: Boolean                          = false
-    override def startsWithSegment: Boolean                        = false
-    override def startsWith(that: Path): Boolean                   = that.isEmpty
-    override protected def reverseAndPrependTo(prefix: Path): Path = prefix
-    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment)
-    override def ++(suffix: Path): Path                            = suffix
-    override def segments: List[String]                            = Nil
+  sealed trait SlashOrEmpty extends Path {
+    def startsWithSegment = false
   }
 
-  final case class Slash(override val tail: Path = Empty) extends Path {
-    override type Head = Char
-    override def head: Head                                        = '/'
-    override def isEmpty: Boolean                                  = false
-    override def length: Int                                       = tail.length + 1
-    override def startsWithSlash: Boolean                          = true
-    override def startsWithSegment: Boolean                        = false
-    override def startsWith(that: Path): Boolean                   = that.isEmpty || that.startsWithSlash && tail.startsWith(that.tail)
-    override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(Slash(prefix))
-    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment).copy(tail = this)
-    override def ++(suffix: Path): Path                            = Slash(tail ++ suffix)
-    override def segments: List[String]                            = tail.segments
-  }
-
-  final case class Segment(override val head: String, override val tail: Path = Empty) extends Path {
+  final case class Segment(override val head: String, override val tail: SlashOrEmpty = Empty) extends Path {
     override type Head = String
     override def isEmpty: Boolean           = false
     override def length: Int                = tail.length + 1
@@ -166,6 +178,33 @@ object Path {
     override def ::(segment: String): Path                         = PathParser(segment + head).phrase(_.isegment).copy(tail = tail)
     override def ++(suffix: Path): Path                            = head :: (tail ++ suffix)
     override def segments: List[String]                            = head :: tail.segments
+  }
+
+  case object Empty extends SlashOrEmpty {
+    override type Head = Nothing
+    override def head: Head                                        = throw new NoSuchElementException("head of empty path")
+    override def tail: Path                                        = throw new UnsupportedOperationException("tail of empty path")
+    override def isEmpty: Boolean                                  = true
+    override def length: Int                                       = 0
+    override def startsWithSlash: Boolean                          = false
+    override def startsWith(that: Path): Boolean                   = that.isEmpty
+    override protected def reverseAndPrependTo(prefix: Path): Path = prefix
+    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment)
+    override def ++(suffix: Path): Path                            = suffix
+    override def segments: List[String]                            = Nil
+  }
+
+  final case class Slash(override val tail: Path = Empty) extends SlashOrEmpty {
+    override type Head = Char
+    override def head: Head                                        = '/'
+    override def isEmpty: Boolean                                  = false
+    override def length: Int                                       = tail.length + 1
+    override def startsWithSlash: Boolean                          = true
+    override def startsWith(that: Path): Boolean                   = that.isEmpty || that.startsWithSlash && tail.startsWith(that.tail)
+    override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(Slash(prefix))
+    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment).copy(tail = this)
+    override def ++(suffix: Path): Path                            = Path./(tail ++ suffix)
+    override def segments: List[String]                            = tail.segments
   }
 
   def apply(path: String): Path = {

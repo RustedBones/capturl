@@ -35,10 +35,15 @@ class PathSpec extends FlatSpec with Matchers {
   }
 
   it should "normalize paths" in {
+    Path("") shouldBe Path.empty
     Path(".") shouldBe Path.empty
     Path("/segment1//segment2") shouldBe Slash(Segment("segment1", Slash(Segment("segment2"))))
     Path("/segment1/./segment2") shouldBe Slash(Segment("segment1", Slash(Segment("segment2"))))
     Path("/segment1/../segment2") shouldBe Slash(Segment("segment2"))
+    Path("segment1/../segment2") shouldBe Segment("segment2")
+    Path("/../segment2") shouldBe Slash(Segment("segment2"))
+    Path("../segment2") shouldBe Segment("..", Slash(Segment("segment2")))
+    Path("../../segment2") shouldBe Segment("..", Slash(Segment("..", Slash(Segment("segment2")))))
   }
 
   it should "resolve paths" in {
@@ -49,6 +54,16 @@ class PathSpec extends FlatSpec with Matchers {
     Path("relative/file").resolve(Path("otherFile")) shouldBe Segment("relative", Slash(Segment("otherFile")))
     Path("/directory1/directory2/").resolve(Path("../otherFile")) shouldBe Slash(Segment("directory1", Slash(Segment("otherFile"))))
     Path.root.resolve(Path("../otherFile")) shouldBe Slash(Segment("otherFile"))
-    Path("relative/").resolve(Path("../otherFile")) shouldBe Segment("otherFile")
+    Path.root.resolve(Path("../../otherFile")) shouldBe Slash(Segment("otherFile"))
+  }
+
+  it should "relativize paths" in {
+    Path.empty.relativize(Path("/base")) shouldBe Slash(Segment("base"))
+    Path.root.relativize(Path("/base")) shouldBe Segment("base")
+    Path("/base/").relativize(Path("/base/otherFile")) shouldBe Segment("otherFile")
+    Path("/base/file").relativize(Path("/base/otherFile")) shouldBe Segment("otherFile")
+    Path("/base/too/deep/").relativize(Path("/base/file")) shouldBe Segment("..", Slash(Segment("..", Slash(Segment("file")))))
+    Path("relativeBase/").relativize(Path("relativeBase/otherFile")) shouldBe Segment("otherFile")
+    Path("relativeBase/").relativize(Path("otherBase/")) shouldBe Segment("otherBase", Slash())
   }
 }
