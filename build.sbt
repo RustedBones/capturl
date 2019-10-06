@@ -4,7 +4,7 @@ val repo     = "capturl"
 
 lazy val commonSettings = Seq(
   organization := "fr.davit",
-  version := "0.1.1-SNAPSHOT",
+  version := "0.2.0-SNAPSHOT",
   crossScalaVersions := Seq("2.11.12", "2.12.10"), //, "2.13.0"),
   scalaVersion := crossScalaVersions.value.last,
   Compile / compile / scalacOptions ++= Settings.scalacOptions(scalaVersion.value),
@@ -56,6 +56,7 @@ lazy val `capturl-akka-http` = (project in file("akka-http"))
   .settings(
     libraryDependencies ++= Seq(
       Dependencies.akkaHttpCore,
+      Dependencies.Test.akkaStream,
       Dependencies.Test.scalaTest
     )
   )

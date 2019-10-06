@@ -4,7 +4,10 @@ import java.net.IDN
 
 import akka.http.scaladsl.model.Uri
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
+import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash}
 import fr.davit.capturl.scaladsl._
+
+import scala.annotation.tailrec
 
 trait UriConverters {
 
@@ -31,12 +34,17 @@ trait UriConverters {
     Uri.Authority(authority.host, authority.port, authority.userInfo)
   }
 
-  implicit def pathConverter[T <: Path](path: T): Uri.Path = {
-    path.foldRight(Uri.Path.Empty: Uri.Path) {
-      case ("/", p)                        => Uri.Path.Slash(p)
-      case (str, p: Uri.Path.SlashOrEmpty) => Uri.Path.Segment(str, p)
-      case _                               => throw new Exception("Invalid path construction")
+  implicit def pathConverter(path: Path): Uri.Path = {
+    @tailrec def uriPathBuilder(p: Path, akkaPath: Uri.Path.SlashOrEmpty): Uri.Path = p match {
+      case Empty                        => akkaPath
+      case Segment(value, Empty)        => Uri.Path.Segment(value, akkaPath)
+      case Segment(value, Slash(Empty)) => Uri.Path.Segment(value, Uri.Path.Slash(akkaPath))
+      case Slash(Segment(value, tail))  => uriPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(value, akkaPath)))
+      case Slash(tail)                  => uriPathBuilder(tail, Uri.Path.Slash(akkaPath))
+      case _                            => throw new Exception("Invalid path conversion")
     }
+
+    uriPathBuilder(path, Uri.Path.Empty)
   }
 
   implicit def queryConverter[T <: Query](query: T): Uri.Query = {

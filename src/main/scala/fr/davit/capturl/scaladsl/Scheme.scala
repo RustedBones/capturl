@@ -23,7 +23,7 @@ object Scheme {
   }
 
   def apply(scheme: String): Scheme = {
-    SchemeParser(scheme).phrase(_.scheme)
+    if (scheme.isEmpty) Scheme.Empty else SchemeParser(scheme).phrase(_.scheme)
   }
 
   def apply(scheme: String, defaultPort: Int): Scheme = {

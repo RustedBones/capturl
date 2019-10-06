@@ -15,9 +15,20 @@ final case class Authority(host: Host, port: Port = Port.empty, userInfo: UserIn
   def isEmpty: Boolean  = host.isEmpty
   def nonEmpty: Boolean = !isEmpty
 
+  def withHost(host: Host): Authority = copy(host = host)
+  override def withHost(host: String): Authority = withHost(Host(host))
+
+  def withPort(port: Port): Authority = copy(port = port)
+  override def withPort(port: Int): Authority = withPort(Port.Number(port))
+
+  def withUserInfo(userInfo: UserInfo): Authority = copy(userInfo = userInfo)
+  override def withUserInfo(userInfo: String): Authority = withUserInfo(UserInfo(userInfo))
+
+  /** Java API */
   override def getHost: javadsl.Host         = host
   override def getPort: Optional[Integer]    = port.toOption.map(p => p: Integer).asJava
   override def getUserInfo: Optional[String] = userInfo.toOption.asJava
+  override def asScala(): Authority = this
 
   override def toString: String = {
     val b = new StringBuilder()

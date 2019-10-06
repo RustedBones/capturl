@@ -14,6 +14,8 @@ sealed abstract class Host extends fr.davit.capturl.javadsl.Host with OptionalPa
   override def isIPv4: Boolean = true
   override def isIPv6: Boolean = false
   override def isNamedHost: Boolean = false
+
+  override def asScala(): Host = this
 }
 
 object Host {
