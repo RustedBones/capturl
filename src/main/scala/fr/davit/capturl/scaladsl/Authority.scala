@@ -15,20 +15,20 @@ final case class Authority(host: Host, port: Port = Port.empty, userInfo: UserIn
   def isEmpty: Boolean  = host.isEmpty
   def nonEmpty: Boolean = !isEmpty
 
-  def withHost(host: Host): Authority = copy(host = host)
+  def withHost(host: Host): Authority            = copy(host = host)
   override def withHost(host: String): Authority = withHost(Host(host))
 
-  def withPort(port: Port): Authority = copy(port = port)
+  def withPort(port: Port): Authority         = copy(port = port)
   override def withPort(port: Int): Authority = withPort(Port.Number(port))
 
-  def withUserInfo(userInfo: UserInfo): Authority = copy(userInfo = userInfo)
+  def withUserInfo(userInfo: UserInfo): Authority        = copy(userInfo = userInfo)
   override def withUserInfo(userInfo: String): Authority = withUserInfo(UserInfo(userInfo))
 
   /** Java API */
   override def getHost: javadsl.Host         = host
   override def getPort: Optional[Integer]    = port.toOption.map(p => p: Integer).asJava
   override def getUserInfo: Optional[String] = userInfo.toOption.asJava
-  override def asScala(): Authority = this
+  override def asScala(): Authority          = this
 
   override def toString: String = {
     val b = new StringBuilder()
@@ -54,9 +54,14 @@ object Authority {
 
     val empty: Port = Empty
 
+    def apply(port: Int): Port = port match {
+      case 0 => Empty
+      case _ => Number(port)
+    }
+
     case object Empty extends Port with EmptyPart
     final case class Number(value: Int) extends Port with DefinedPart[Int] {
-      require(0 <= value && value < MaxPortNumber, s"Invalid port number '$value'")
+      require(0 < value && value < MaxPortNumber, s"Invalid port number '$value'")
     }
   }
 
@@ -65,8 +70,9 @@ object Authority {
   object UserInfo {
     val empty: UserInfo = Empty
 
-    def apply(userInfo: String): UserInfo = {
-      AuthorityParser(userInfo).phrase(_.iuserinfo)
+    def apply(userInfo: String): UserInfo = userInfo match {
+      case "" => Empty
+      case _  => AuthorityParser(userInfo).phrase(_.iuserinfo)
     }
 
     case object Empty extends UserInfo with EmptyPart
