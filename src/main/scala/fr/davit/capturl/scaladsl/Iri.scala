@@ -4,17 +4,15 @@ import java.util.Objects
 
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.IriParser
-import fr.davit.capturl.scaladsl.Iri.RelativeIri
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
-sealed abstract class Iri private[capturl] extends javadsl.Iri {
-  def scheme: Scheme
-  def authority: Authority
-  def path: Path
-  def query: Query
-  def fragment: Fragment
-
-  type Self <: Iri
+final case class Iri(
+    scheme: Scheme = Scheme.empty,
+    authority: Authority = Authority.empty,
+    path: Path = Path.empty,
+    query: Query = Query.empty,
+    fragment: Fragment = Fragment.empty
+) extends javadsl.Iri {
 
   private lazy val normalizedAuthority: Authority = {
     if (Scheme.defaultPort(scheme).contains(authority.port)) authority.withPort(Authority.Port.empty)
@@ -28,20 +26,20 @@ sealed abstract class Iri private[capturl] extends javadsl.Iri {
   def isAbsolute: Boolean = scheme.nonEmpty
   def isRelative: Boolean = !isAbsolute
 
-  def withScheme(scheme: Scheme): Iri
+  def withScheme(scheme: Scheme): Iri = copy(scheme =  scheme)
   override def withScheme(scheme: String): Iri = withScheme(Scheme(scheme))
 
-  def withAuthority(authority: Authority): Self
-  override def withAuthority(authority: String): Self = withAuthority(Authority(authority))
+  def withAuthority(authority: Authority): Iri = copy(authority =  authority)
+  override def withAuthority(authority: String): Iri = withAuthority(Authority(authority))
 
-  def withPath(path: Path): Self
-  override def withPath(path: String): Self = withPath(Path(path))
+  def withPath(path: Path): Iri = copy(path = path)
+  override def withPath(path: String): Iri = withPath(Path(path))
 
-  def withQuery(query: Query): Self
-  override def withQuery(query: String): Self = withQuery(Query(query))
+  def withQuery(query: Query): Iri = copy(query = query)
+  override def withQuery(query: String): Iri = withQuery(Query(query))
 
-  def withFragment(fragment: Fragment): Self
-  override def withFragment(fragment: String): Self = withFragment(Fragment(fragment))
+  def withFragment(fragment: Fragment): Iri = copy(fragment = fragment)
+  override def withFragment(fragment: String): Iri = withFragment(Fragment(fragment))
 
   def relativize(iri: Iri): Iri = iri match {
     case Iri(s, a, p, q, f) =>
@@ -49,7 +47,7 @@ sealed abstract class Iri private[capturl] extends javadsl.Iri {
           (a.nonEmpty && iri.normalizedAuthority != normalizedAuthority)) {
         iri
       } else {
-        RelativeIri(Authority.empty, path.relativize(p), q, f)
+       Iri(path = path.relativize(p), query = q, fragment = f)
       }
   }
 
@@ -101,72 +99,9 @@ sealed abstract class Iri private[capturl] extends javadsl.Iri {
 
 object Iri {
 
-  case class AbsoluteIri(
-      scheme: Scheme.Protocol,
-      authority: Authority,
-      path: Path,
-      query: Query,
-      fragment: Fragment
-  ) extends Iri {
-
-    override type Self = AbsoluteIri
-
-    override def withScheme(scheme: Scheme): Iri = scheme match {
-      case Scheme.Empty              => RelativeIri(authority, path, query, fragment)
-      case protocol: Scheme.Protocol => copy(scheme = protocol)
-    }
-
-    override def withAuthority(authority: Authority): AbsoluteIri = copy(authority = authority)
-
-    override def withPath(path: Path): AbsoluteIri = copy(path = path)
-
-    override def withQuery(query: Query): AbsoluteIri = copy(query = query)
-
-    override def withFragment(fragment: Fragment): AbsoluteIri = copy(fragment = fragment)
-  }
-
-  case class RelativeIri(
-      authority: Authority,
-      path: Path,
-      query: Query,
-      fragment: Fragment
-  ) extends Iri {
-
-    override type Self = RelativeIri
-
-    override def scheme: Scheme = Scheme.empty
-
-    override def withScheme(scheme: Scheme): Iri = scheme match {
-      case Scheme.Empty              => this
-      case protocol: Scheme.Protocol => AbsoluteIri(protocol, authority, path, query, fragment)
-    }
-
-    override def withAuthority(authority: Authority): RelativeIri = copy(authority = authority)
-
-    override def withPath(path: Path): RelativeIri = copy(path = path)
-
-    override def withQuery(query: Query): RelativeIri = copy(query = query)
-
-    override def withFragment(fragment: Fragment): RelativeIri = copy(fragment = fragment)
-  }
-
-  def apply(
-      scheme: Scheme = Scheme.empty,
-      authority: Authority = Authority.empty,
-      path: Path = Path.empty,
-      query: Query = Query.empty,
-      fragment: Fragment = Fragment.empty): Iri = {
-    scheme match {
-      case Scheme.Empty              => RelativeIri(authority, path, query, fragment)
-      case protocol: Scheme.Protocol => AbsoluteIri(protocol, authority, path, query, fragment)
-    }
-  }
-
-  def unapply(iri: Iri): Option[(Scheme, Authority, Path, Query, Fragment)] = {
-    Some((iri.scheme, iri.authority, iri.path, iri.query, iri.fragment))
-  }
+  def empty = Iri()
 
   def apply(iri: String): Iri = {
-    IriParser(iri).phrase(_.IRI)
+    IriParser(iri).IRI.run()
   }
 }
