@@ -12,5 +12,7 @@ class HostSpec extends FlatSpec with Matchers {
   "IPv6Host" should "normalize ip address" in {
     IPv6Host("2001:0db8:0000:0000:0000:ff00:0042:8329").toString shouldBe "2001:db8::ff00:42:8329"
     IPv6Host("2001:0:0:1:0:0:0:1").toString shouldBe "2001:0:0:1::1"
+    IPv6Host("fec0:0:0:0:0:0:0:0").toString shouldBe "fec0::"
+    IPv6Host("0:0:0:0:0:0:0:1").toString shouldBe "::1"
   }
 }

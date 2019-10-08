@@ -90,12 +90,18 @@ object Host {
           }
           currentLength = 0
       }
+      if (currentLength > maxLength) {
+        maxIdx = currentIdx
+        maxLength = currentLength
+      }
 
-      if (maxIdx > 0) {
+      if (maxLength > 0) {
         val builder = Seq.newBuilder[String]
-        builder ++= hextets.take(maxIdx)
+        val high = hextets.take(maxIdx)
+        val low = hextets.drop(maxIdx + maxLength)
+        builder ++= (if (high.isEmpty) Seq("") else high)
         builder += ""
-        builder ++= hextets.drop(maxIdx + maxLength)
+        builder ++= (if (low.isEmpty) Seq("") else low)
         builder.result()
       } else {
         hextets
