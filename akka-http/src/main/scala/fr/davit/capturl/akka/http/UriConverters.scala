@@ -66,7 +66,6 @@ trait UriConverters {
       case Uri.Path.Slash(tail)                            => pathBuilder(tail, Slash(p))
       case Uri.Path.Segment(segment, Uri.Path.Empty)       => Segment(segment, p)
       case Uri.Path.Segment(segment, Uri.Path.Slash(tail)) => pathBuilder(tail, Slash(Segment(segment, p)))
-      case _                                               => throw new Exception("Invalid path conversion")
     }
 
     pathBuilder(path.reverse, Path.Empty)
@@ -78,7 +77,6 @@ trait UriConverters {
       case Slash(tail)                   => akkaPathBuilder(tail, Uri.Path.Slash(akkaPath))
       case Segment(segment, Empty)       => Uri.Path.Segment(segment, akkaPath)
       case Segment(segment, Slash(tail)) => akkaPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(segment, akkaPath)))
-      case _                             => throw new Exception("Invalid path conversion")
     }
     akkaPathBuilder(path.reverse, Uri.Path.Empty)
   }
