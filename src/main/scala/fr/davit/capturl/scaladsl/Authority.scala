@@ -10,7 +10,7 @@ import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.compat.java8.OptionConverters._
 
-final case class Authority(host: Host, port: Port = Port.empty, userInfo: UserInfo = UserInfo.empty)
+final case class Authority(host: Host = Host.empty, port: Port = Port.empty, userInfo: UserInfo = UserInfo.empty)
     extends javadsl.Authority {
   def isEmpty: Boolean  = host.isEmpty
   def nonEmpty: Boolean = !isEmpty
@@ -41,7 +41,7 @@ final case class Authority(host: Host, port: Port = Port.empty, userInfo: UserIn
 
 object Authority {
 
-  val empty: Authority = Authority(Host.Empty)
+  val empty: Authority = Authority()
 
   def apply(authority: String): Authority = {
     AuthorityParser(authority).phrase(_.iauthority)
