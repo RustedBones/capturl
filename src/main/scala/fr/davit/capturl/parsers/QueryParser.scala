@@ -10,7 +10,7 @@ object QueryParser {
 
 trait QueryParser extends RichStringBuilding { this: Parser =>
 
-  protected lazy val `part-sub-delims-predicate` = {
+  protected lazy val `part-sub-delims-predicate`: CharPredicate = {
     `sub-delims-predicate` -- CharPredicate('&', '+') ++ CharPredicate(':', '@', '/', '?')
   }
 
@@ -35,9 +35,10 @@ trait QueryParser extends RichStringBuilding { this: Parser =>
     part.*.separatedBy('&') ~> { parts: Seq[String] =>
       val b = Query.newBuilder
       parts.foreach { p =>
-        val i = p.prefixLength(_ != '=')
-        if (i == p.length) b += p -> None
-        else p.take(i) -> Some(p.drop(i + 1))
+        val keyValue = p.split("=")
+        val key = keyValue.head
+        val value = keyValue.drop(1).headOption
+        b += key -> value
       }
       b.result()
     }
