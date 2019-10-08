@@ -62,28 +62,25 @@ trait UriConverters {
 
   implicit def fromAkkaPath(path: Uri.Path): Path = {
     @tailrec def pathBuilder(akkaPath: Uri.Path, p: SlashOrEmpty): Path = akkaPath match {
-      case Uri.Path.Empty                                          => p
-      case Uri.Path.Segment(value, Uri.Path.Empty)                 => Segment(value, p)
-      case Uri.Path.Segment(value, Uri.Path.Slash(Uri.Path.Empty)) => Segment(value, Slash(p))
-      case Uri.Path.Slash(Uri.Path.Segment(value, tail))           => pathBuilder(tail, Slash(Segment(value, p)))
-      case Uri.Path.Slash(tail)                                    => pathBuilder(tail, Slash(p))
-      case _                                                       => throw new Exception("Invalid path conversion")
+      case Uri.Path.Empty                                  => p
+      case Uri.Path.Slash(tail)                            => pathBuilder(tail, Slash(p))
+      case Uri.Path.Segment(segment, Uri.Path.Empty)       => Segment(segment, p)
+      case Uri.Path.Segment(segment, Uri.Path.Slash(tail)) => pathBuilder(tail, Slash(Segment(segment, p)))
+      case _                                               => throw new Exception("Invalid path conversion")
     }
 
-    pathBuilder(path, Path.Empty)
+    pathBuilder(path.reverse, Path.Empty)
   }
 
   implicit def toAkkaPath(path: Path): Uri.Path = {
     @tailrec def akkaPathBuilder(p: Path, akkaPath: Uri.Path.SlashOrEmpty): Uri.Path = p match {
-      case Empty                        => akkaPath
-      case Segment(value, Empty)        => Uri.Path.Segment(value, akkaPath)
-      case Segment(value, Slash(Empty)) => Uri.Path.Segment(value, Uri.Path.Slash(akkaPath))
-      case Slash(Segment(value, tail))  => akkaPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(value, akkaPath)))
-      case Slash(tail)                  => akkaPathBuilder(tail, Uri.Path.Slash(akkaPath))
-      case _                            => throw new Exception("Invalid path conversion")
+      case Empty                         => akkaPath
+      case Slash(tail)                   => akkaPathBuilder(tail, Uri.Path.Slash(akkaPath))
+      case Segment(segment, Empty)       => Uri.Path.Segment(segment, akkaPath)
+      case Segment(segment, Slash(tail)) => akkaPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(segment, akkaPath)))
+      case _                             => throw new Exception("Invalid path conversion")
     }
-
-    akkaPathBuilder(path, Uri.Path.Empty)
+    akkaPathBuilder(path.reverse, Uri.Path.Empty)
   }
 
   implicit def fromAkkaQuery(query: Uri.Query): Query = {
