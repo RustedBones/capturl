@@ -40,7 +40,7 @@ Those are the IRI normalization steps:
     - lower case normalization
 - Hosts
     - NamedHost are lower cased and decoded (punycode)
-    - IPs leading zeros in bytes are dropped
+    - IPv4 and [IPv6](https://tools.ietf.org/html/rfc5952#section-4) are normalized
 - Path
     - collapse current folder
     - collapse parent folder

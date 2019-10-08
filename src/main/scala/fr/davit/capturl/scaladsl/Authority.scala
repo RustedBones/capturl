@@ -33,7 +33,7 @@ final case class Authority(host: Host = Host.empty, port: Port = Port.empty, use
   override def toString: String = {
     val b = new StringBuilder()
     if (userInfo.nonEmpty) b.append(s"$userInfo@")
-    b.append(host)
+    if (host.nonEmpty) b.append(host.address)
     if (port.nonEmpty) b.append(s":$port")
     b.toString
   }
