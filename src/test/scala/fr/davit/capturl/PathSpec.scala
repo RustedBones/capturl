@@ -30,6 +30,7 @@ class PathSpec extends FlatSpec with Matchers {
   it should "provide segments" in {
     Path.empty.segments shouldBe Seq.empty[String]
     Path.root.segments shouldBe Seq.empty[String]
+    Path("/segment1//segment2") shouldBe Slash(Segment("segment1", Slash(Segment("", Slash(Segment("segment2"))))))
     Path("/segment1/segment2/segment3/").segments shouldBe Seq("segment1", "segment2", "segment3")
     Path("segment1/segment2/segment3").segments shouldBe Seq("segment1", "segment2", "segment3")
   }
@@ -37,7 +38,6 @@ class PathSpec extends FlatSpec with Matchers {
   it should "normalize paths" in {
     Path("") shouldBe Path.empty
     Path(".") shouldBe Path.empty
-    Path("/segment1//segment2") shouldBe Slash(Segment("segment1", Slash(Segment("segment2"))))
     Path("/segment1/./segment2") shouldBe Slash(Segment("segment1", Slash(Segment("segment2"))))
     Path("/segment1/../segment2") shouldBe Slash(Segment("segment2"))
     Path("segment1/../segment2") shouldBe Segment("segment2")
