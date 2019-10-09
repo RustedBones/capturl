@@ -14,11 +14,20 @@ sealed abstract class Query
     with LinearSeq[(String, Option[String])]
     with LinearSeqOptimized[(String, Option[String]), Query] {
   override def newBuilder: mutable.Builder[(String, Option[String]), Query] = Query.newBuilder
-  override def toString: String = mkString("&")
+
+  override def toString: String = {
+    map {
+      case (k, None) => k
+      case (k, Some(v)) => s"$k=$v"
+    }.mkString("&")
+  }
 
   /* Java API */
-  override def getParameters(): java.lang.Iterable[QueryParameter] =
-    map { case (k, v) => new QueryParameter(k, v.orNull) }.asJava
+  override def getParameters(): java.lang.Iterable[QueryParameter] = {
+    map {
+      case (k, v) => new QueryParameter(k, v.orNull)
+    }.asJava
+  }
   override def asScala(): Query = this
 }
 
@@ -31,15 +40,15 @@ object Query {
   }
 
   def apply(query: Seq[(String, Option[String])]): Query = {
-    query.foldLeft(empty) { case (q, (k, v)) => Part(k, v, q) }
+    query.foldRight(empty) { case ((k, v), q) => Part(k, v, q) }
   }
 
   def newBuilder: mutable.Builder[(String, Option[String]), Query] =
     new mutable.Builder[(String, Option[String]), Query] {
-      val b                                                          = Seq.newBuilder[(String, Option[String])]
+      val b                                             = Seq.newBuilder[(String, Option[String])]
       def +=(elem: (String, Option[String])): this.type = { b += elem; this }
-      def clear()                                                    = b.clear()
-      def result()                                                   = apply(b.result())
+      def clear()                                       = b.clear()
+      def result()                                      = apply(b.result())
     }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -48,10 +57,6 @@ object Query {
   final case class Part(key: String, value: Option[String] = None, override val tail: Query = Empty) extends Query {
     override def isEmpty: Boolean               = false
     override def head: (String, Option[String]) = key -> value
-    override def toString: String = value match {
-      case Some(v) => s"$key=$v"
-      case None    => key
-    }
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -63,5 +68,4 @@ object Query {
     override def tail: Query                    = throw new UnsupportedOperationException("tail of empty query")
     override def toString: String               = ""
   }
-
 }

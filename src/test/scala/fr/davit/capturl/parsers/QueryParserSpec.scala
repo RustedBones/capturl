@@ -14,7 +14,7 @@ class QueryParserSpec extends FlatSpec with Matchers {
   }
 
   "QueryParser" should "parse query" in new Fixture {
-    parse("key1=val1?key2=val2#fragment") shouldBe Query("key1=val1?key2=val2") -> "#fragment"
+    parse("key1=val1&key2#fragment") shouldBe Query.Part("key1", Some("val1"), Query.Part("key2", None, Query.Empty)) -> "#fragment"
   }
 
 }

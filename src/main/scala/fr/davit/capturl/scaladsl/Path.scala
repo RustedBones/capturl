@@ -92,13 +92,6 @@ sealed abstract class Path extends javadsl.Path {
   }
 
   def normalize(): Path = {
-    // find suspicious segments that would need normalization
-    @tailrec def hasSuspiciousSegment(p: Path): Boolean = p match {
-      case Empty                       => false
-      case Segment("" | "." | "..", _) => true
-      case _                           => hasSuspiciousSegment(p.tail)
-    }
-
     // remove slash when possible
     def collapseSlash(p: Path): Path = p match {
       case Slash(tail) if tail.nonEmpty => tail
@@ -106,9 +99,8 @@ sealed abstract class Path extends javadsl.Path {
     }
 
     @tailrec def process(input: Path, output: SlashOrEmpty = Empty): Path = input match {
-      case Slash(tail) => process(tail, Slash(output))
-      case Segment("" | ".", tail) =>
-        process(collapseSlash(tail), output)
+      case Slash(tail)        => process(tail, Slash(output))
+      case Segment(".", tail) => process(collapseSlash(tail), output)
       case Segment("..", tail) =>
         val parent = output match {
           case Empty                       => Slash(Segment(".."))
@@ -118,16 +110,14 @@ sealed abstract class Path extends javadsl.Path {
           case Slash(_)                    => output
         }
         process(collapseSlash(tail), parent)
-      case Segment(string, Slash(tail)) => process(tail, Slash(Segment(string, output)))
-      case Segment(string, Empty)       => Segment(string, output).reverse
-      case Empty                        => output.reverse
+      case Segment("", Empty)                  => output.reverse // trailing empty segment
+      case Segment("", tail) if output.isEmpty => process(tail, output) // starting empty segment
+      case Segment(string, Slash(tail))        => process(tail, Slash(Segment(string, output)))
+      case Segment(string, Empty)              => Segment(string, output).reverse
+      case Empty                               => output.reverse
     }
 
-    if (hasSuspiciousSegment(this)) {
-      if (isAbsolute) process(tail, Slash()) else process(this)
-    } else {
-      this
-    }
+    if (isAbsolute) process(tail, Slash()) else process(this)
   }
 
   def segments: List[String]

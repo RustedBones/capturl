@@ -24,7 +24,7 @@ libraryDependencies += "fr.davit" %% "capturl" % <version>
 All the `apply`/`create` methods accepting String input will be validated against 
 [RFC 3987](https://tools.ietf.org/rfc/rfc3987.txt) compliant parsers to create the model classes.
 
-If you are sure about your input, and don't want to skip validation for efficiency reason, you can construct the models
+If you are sure about your input, and want to skip validation for efficiency reason, you can construct the models
 using the implementation classes. eg:
 
 ```scala
@@ -40,16 +40,16 @@ Those are the IRI normalization steps:
     - lower case normalization
 - Hosts
     - NamedHost are lower cased and decoded (punycode)
-    - IPs leading zeros in bytes are dropped
+    - IPv4 and [IPv6](https://tools.ietf.org/html/rfc5952#section-4) are normalized
 - Path
-    - collapse double slashes
     - collapse current folder
     - collapse parent folder
 - Query
     - spaces are replaced by '+'
 - Iri
     - omit custom port if matches the scheme default port
-    - empty path for absolute, and scheme relative IRI is replaced by root
+    - root path is added for absolute / host relative iris
+    - default port is hidden
 - General
     - all encoded characters are decoded
 
@@ -84,6 +84,7 @@ val iri = iri"http://user{info@example.com/"
 ### TODO
 
 - provide relax parsers
+- provide more normalization options
 - support holes in interpolation 
 - support scala 2.13
 

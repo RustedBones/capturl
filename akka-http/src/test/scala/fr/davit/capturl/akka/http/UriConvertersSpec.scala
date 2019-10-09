@@ -73,12 +73,12 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
   it should "convert a Uri.Path to capturl" in {
     (Uri.Path.Empty: Path) shouldBe Path.empty
-    (Uri.Path.Segment("segment", Uri.Path.Slash(Uri.Path.Empty)): Path) shouldBe Segment("segment", Slash())
+    (Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty))): Path) shouldBe Segment("directory", Slash(Segment("file.html")))
   }
 
   it should "convert a capturl path to Uri.Path" in {
     (Path.empty: Uri.Path) shouldBe Uri.Path.Empty
-    (Segment("segment", Slash()) : Uri.Path) shouldBe Uri.Path.Segment("segment", Uri.Path.Slash(Uri.Path.Empty))
+    (Segment("directory", Slash(Segment("file.html"))) : Uri.Path) shouldBe Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty)))
   }
 
   it should "convert a Uri.Query to capturl" in {
