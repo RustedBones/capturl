@@ -81,9 +81,9 @@ sealed abstract class Path extends javadsl.Path {
   }
 
   def resolve(path: Path): Path = {
-    if (path.isAbsolute) {
-      path
-    } else {
+    if (path.isAbsolute) path
+    else if (path.isEmpty) this
+    else {
       reverse match {
         case Segment(_, tail) => tail.reverseAndPrependTo(path).normalize()
         case reversed         => reversed.reverseAndPrependTo(path).normalize()

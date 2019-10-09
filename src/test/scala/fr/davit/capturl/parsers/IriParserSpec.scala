@@ -15,7 +15,7 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   "IriParser" should "parse absolute IRI" in new Fixture {
-    val iri = Iri(
+    val iri = StrictIri(
       Scheme.HTTP,
       Authority(Host.NamedHost("example.com")),
       Slash(Segment("path")),
@@ -26,8 +26,7 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse scheme relative IRI" in new Fixture {
-
-    val iri = Iri(
+    val iri = StrictIri(
       Scheme.empty,
       Authority(Host.NamedHost("example.com")),
       Slash(Segment("path")),
@@ -38,8 +37,7 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse host relative IRI" in new Fixture {
-
-    val iri = Iri(
+    val iri = StrictIri(
       Scheme.empty,
       Authority.empty,
       Slash(Segment("path")),
@@ -50,8 +48,7 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse path relative IRI" in new Fixture {
-
-    val iri = Iri(
+    val iri = StrictIri(
       Scheme.empty,
       Authority.empty,
       Path.empty,
@@ -62,8 +59,7 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse query relative IRI" in new Fixture {
-
-    val iri = Iri(
+    val iri = StrictIri(
       Scheme.empty,
       Authority.empty,
       Path.empty,
@@ -73,9 +69,8 @@ class IriParserSpec extends FlatSpec with Matchers {
     parse("#fragment") shouldBe iri -> ""
   }
 
-  it should "not normalize empty path when host/scheme defined" in new Fixture {
-
-    val iri = Iri(
+  it should "normalize empty path when host/scheme defined" in new Fixture {
+    val iri = StrictIri(
       Scheme.HTTP,
       Authority(Host.NamedHost("example.com")),
       Path.root,

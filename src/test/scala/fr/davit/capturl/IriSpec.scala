@@ -9,13 +9,13 @@ class IriSpec extends FlatSpec with Matchers {
 
   val testHost = Host.NamedHost("example.com")
 
-  "iri" should "tell if it is absolute" in {
-    Iri().isAbsolute shouldBe false
-    Iri(scheme = Scheme.HTTP).isAbsolute shouldBe true
-    Iri(authority = Authority(testHost)).isAbsolute shouldBe false
-    Iri(path = Path.root).isAbsolute shouldBe false
-    Iri(query = Query.Part("key")).isAbsolute shouldBe false
-    Iri(fragment = Fragment.Identifier("identifier")).isAbsolute shouldBe false
+  "StrictIri" should "tell if it is absolute" in {
+    StrictIri().isAbsolute shouldBe false
+    StrictIri(scheme = Scheme.HTTP).isAbsolute shouldBe true
+    StrictIri(authority = Authority(testHost)).isAbsolute shouldBe false
+    StrictIri(path = Path.root).isAbsolute shouldBe false
+    StrictIri(query = Query.Part("key")).isAbsolute shouldBe false
+    StrictIri(fragment = Fragment.Identifier("identifier")).isAbsolute shouldBe false
   }
 
   it should "normalize port" in {
@@ -24,18 +24,18 @@ class IriSpec extends FlatSpec with Matchers {
     val authority = Authority(testHost)
     val authorityWithPort = authority.copy(port = Port.Number(port))
 
-    Iri(scheme, authorityWithPort) shouldBe Iri(scheme, authority)
+    StrictIri(scheme, authorityWithPort) shouldBe StrictIri(scheme, authority)
   }
 
   it should "normalize path" in {
-    Iri(Scheme.File, path = Segment("..")) shouldBe Iri(Scheme.File, path = Path.root)
-    Iri(Scheme.File) shouldBe Iri(Scheme.File, path = Path.root)
-    Iri(authority = Authority(testHost)) shouldBe Iri(authority = Authority(testHost), path = Path.root)
-    Iri(Scheme.File, path = Segment("file")) shouldBe Iri(Scheme.File, path = Slash(Segment("file")))
+    StrictIri(Scheme.File, path = Segment("..")) shouldBe StrictIri(Scheme.File, path = Path.root)
+    StrictIri(Scheme.File) shouldBe StrictIri(Scheme.File, path = Path.root)
+    StrictIri(authority = Authority(testHost)) shouldBe StrictIri(authority = Authority(testHost), path = Path.root)
+    StrictIri(Scheme.File, path = Segment("file")) shouldBe StrictIri(Scheme.File, path = Slash(Segment("file")))
   }
 
   it should "resolve iris" in {
-    val base = Iri(
+    val base = StrictIri(
       Scheme.HTTP,
       Authority(testHost),
       Segment("directory", Slash(Segment("file"))),
@@ -51,7 +51,7 @@ class IriSpec extends FlatSpec with Matchers {
     val otherFragment = Fragment.Identifier("otherIdentifier")
 
     {
-      val otherIri = Iri(
+      val otherIri = StrictIri(
         scheme = otherScheme,
         authority = otherAuthority,
         path = otherAbsolutePath,
@@ -62,7 +62,7 @@ class IriSpec extends FlatSpec with Matchers {
     }
 
     {
-      val otherIri = Iri(
+      val otherIri = StrictIri(
         authority = otherAuthority,
         path = otherAbsolutePath,
         query = otherQuery,
@@ -72,7 +72,7 @@ class IriSpec extends FlatSpec with Matchers {
     }
 
     {
-      val otherIri = Iri(
+      val otherIri = StrictIri(
         path = otherAbsolutePath,
         query = otherQuery,
         fragment = otherFragment
@@ -83,7 +83,7 @@ class IriSpec extends FlatSpec with Matchers {
     }
 
     {
-      val otherIri = Iri(
+      val otherIri = StrictIri(
         path = otherRelativePath,
         query = otherQuery,
         fragment = otherFragment
@@ -95,7 +95,7 @@ class IriSpec extends FlatSpec with Matchers {
     }
 
     {
-      val otherIri = Iri(
+      val otherIri = StrictIri(
         query = otherQuery,
         fragment = otherFragment
       )
@@ -106,14 +106,13 @@ class IriSpec extends FlatSpec with Matchers {
     }
 
     {
-      val otherIri = Iri(
+      val otherIri = StrictIri(
         fragment = otherFragment
       )
       base.resolve(otherIri) shouldBe otherIri
         .withScheme(base.scheme)
         .withAuthority(base.authority)
         .withPath(base.path)
-        .withQuery(base.query)
     }
 
   }
