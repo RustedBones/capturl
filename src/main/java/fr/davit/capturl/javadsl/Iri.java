@@ -1,18 +1,21 @@
 package fr.davit.capturl.javadsl;
 
 import fr.davit.capturl.scaladsl.Iri$;
+import fr.davit.capturl.scaladsl.Iri.ParsingMode$;
 
 public abstract class Iri {
 
-    public static Iri create(String iri) { return Iri$.MODULE$.apply(iri); }
+    public static Iri create(String iri, String mode) { return Iri$.MODULE$.apply(iri, ParsingMode$.MODULE$.apply(mode)); }
 
-    public static Iri resolve(Iri base, Iri iri) { return null; } // TODO
+    public static Iri create(String iri) { return create(iri, "strict"); }
 
     public static final Iri EMPTY = fr.davit.capturl.scaladsl.Iri.EMPTY;
 
     //------------------------------------------------------------------------------------------------------------------
     // Iri
     //------------------------------------------------------------------------------------------------------------------
+    public abstract boolean isValid();
+
     public abstract boolean isAbsolute();
 
     public abstract boolean isRelative();

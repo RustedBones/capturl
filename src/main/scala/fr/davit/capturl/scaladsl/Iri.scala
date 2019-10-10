@@ -1,74 +1,33 @@
 package fr.davit.capturl.scaladsl
 
-import java.util.Objects
-
 import fr.davit.capturl.javadsl
-import fr.davit.capturl.parsers.IriParser
+import fr.davit.capturl.parsers._
+import org.parboiled2.Parser.DeliveryScheme
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
-final case class Iri(
-    scheme: Scheme = Scheme.empty,
-    authority: Authority = Authority.empty,
-    path: Path = Path.empty,
-    query: Query = Query.empty,
-    fragment: Fragment = Fragment.empty
-) extends javadsl.Iri {
+import scala.util.{Success, Try}
 
-  private lazy val normalizedAuthority: Authority = {
-    if (Scheme.defaultPort(scheme).contains(authority.port)) authority.withPort(Authority.Port.empty)
-    else authority
-  }
+sealed abstract class Iri private[capturl] extends javadsl.Iri {
+  def scheme: Scheme
+  def authority: Authority
+  def path: Path
+  def query: Query
+  def fragment: Fragment
 
-  private lazy val normalizedPath: Path = {
-    if (scheme.nonEmpty || authority.nonEmpty) Path.root.resolve(path) else path
-  }
+  def toStrict: StrictIri
 
   def isAbsolute: Boolean = scheme.nonEmpty
   def isRelative: Boolean = !isAbsolute
 
-  def withScheme(scheme: Scheme): Iri = copy(scheme =  scheme)
-  override def withScheme(scheme: String): Iri = withScheme(Scheme(scheme))
+  def withScheme(scheme: Scheme): Iri
+  def withAuthority(authority: Authority): Iri
+  def withPath(path: Path): Iri
+  def withQuery(query: Query): Iri
+  def withFragment(fragment: Fragment): Iri
 
-  def withAuthority(authority: Authority): Iri = copy(authority =  authority)
-  override def withAuthority(authority: String): Iri = withAuthority(Authority(authority))
+  def relativize(iri: Iri): Iri
 
-  def withPath(path: Path): Iri = copy(path = path)
-  override def withPath(path: String): Iri = withPath(Path(path))
-
-  def withQuery(query: Query): Iri = copy(query = query)
-  override def withQuery(query: String): Iri = withQuery(Query(query))
-
-  def withFragment(fragment: Fragment): Iri = copy(fragment = fragment)
-  override def withFragment(fragment: String): Iri = withFragment(Fragment(fragment))
-
-  def relativize(iri: Iri): Iri = iri match {
-    case Iri(s, a, p, q, f) =>
-      if ((s.nonEmpty && s != scheme) ||
-          (a.nonEmpty && iri.normalizedAuthority != normalizedAuthority)) {
-        iri
-      } else {
-       Iri(path = path.relativize(p), query = q, fragment = f)
-      }
-  }
-
-  def resolve(iri: Iri): Iri = iri match {
-    case Iri(s, a, p, q, f) =>
-      if (s.nonEmpty) iri
-      else if (a.nonEmpty) withAuthority(a).withPath(p).withQuery(q).withFragment(f)
-      else if (p.nonEmpty) withPath(path.resolve(p)).withQuery(q).withFragment(f)
-      else if (q.nonEmpty) withQuery(q).withFragment(f)
-      else withFragment(f)
-  }
-
-  override def toString: String = {
-    val b = new StringBuilder()
-    if (scheme.nonEmpty) b.append(s"$scheme://")
-    if (normalizedAuthority.nonEmpty) b.append(normalizedAuthority)
-    if (normalizedPath.nonEmpty) b.append(normalizedPath)
-    if (query.nonEmpty) b.append(s"?$query")
-    if (fragment.nonEmpty) b.append(s"#$fragment")
-    b.toString
-  }
+  def resolve(iri: Iri): Iri
 
   /* Java API */
   override def getScheme: String                                        = scheme.toString
@@ -83,25 +42,287 @@ final case class Iri(
   override def resolve(iri: javadsl.Iri): javadsl.Iri                   = resolve(iri.asScala)
   override def asScala(): Iri                                           = this
 
-  override def equals(o: Any): Boolean = o match {
-    case that: Iri =>
-      Objects.equals(this.scheme, that.scheme) &&
-        Objects.equals(this.normalizedAuthority, that.normalizedAuthority) &&
-        Objects.equals(this.normalizedPath, that.normalizedPath) &&
-        Objects.equals(this.query, that.query) &&
-        Objects.equals(this.fragment, that.fragment)
-    case _ => false
+  override def equals(other: Any): Boolean = other match {
+    case that: Iri => this.toString == that.toString
+    case _         => false
   }
 
-  override def hashCode(): Int = Objects.hash(scheme, authority, path, query, fragment)
-
+  override def hashCode(): Int = toString.hashCode
 }
 
 object Iri {
 
-  def empty = Iri()
+  /**
+    * Normalize string to option of non empty string
+    */
+  def rawString(value: String): Option[String] = Option(value).filter(_.nonEmpty)
 
-  def apply(iri: String): Iri = {
-    IriParser(iri).IRI.run()
+  /**
+    * Remove port from authority if this is the deafault protocol port
+    */
+  def normalizeAuthority(scheme: Scheme, authority: Authority): Authority = {
+    if (Scheme.defaultPort(scheme).contains(authority.port)) authority.withPort(Authority.Port.empty) else authority
+  }
+
+  /**
+    * If Iri is absolute or has an authority defined. Makes path absolute
+    */
+  def normalizePath(scheme: Scheme, authority: Authority, path: Path): Path = {
+    if (scheme.nonEmpty || authority.nonEmpty) Path.root.resolve(path) else path
+  }
+
+  sealed trait ParsingMode
+
+  object ParsingMode {
+    case object Strict extends ParsingMode
+    case object Lazy extends ParsingMode
+
+    def apply(mode: String): ParsingMode = mode match {
+      case "strict" => Strict
+      case "lazy"   => Lazy
+      case _        => throw new IllegalArgumentException(mode + " is not a legal ParsingMode")
+    }
+  }
+
+  val empty: Iri = StrictIri()
+
+  def apply(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Iri = parsingMode match {
+    case ParsingMode.Strict => IriParser(iri).IRI.run()
+    case ParsingMode.Lazy   => IriParser(iri).IRILazy.run()
+  }
+}
+
+final case class StrictIri(
+    scheme: Scheme = Scheme.empty,
+    authority: Authority = Authority.empty,
+    path: Path = Path.empty,
+    query: Query = Query.empty,
+    fragment: Fragment = Fragment.empty
+) extends Iri {
+
+  import Iri._
+
+  private[capturl] lazy val normalizedAuthority: Authority = normalizeAuthority(scheme, authority)
+
+  private[capturl] lazy val normalizedPath: Path = normalizePath(scheme, authority, path)
+
+  override def toStrict: StrictIri = this
+
+  override def isValid: Boolean = true
+
+  override def withScheme(scheme: Scheme): Iri = copy(scheme = scheme)
+  override def withScheme(scheme: String): Iri = withScheme(Scheme(scheme))
+
+  override def withAuthority(authority: Authority): Iri = copy(authority = authority)
+  override def withAuthority(authority: String): Iri    = withAuthority(Authority(authority))
+
+  override def withPath(path: Path): Iri   = copy(path = path)
+  override def withPath(path: String): Iri = withPath(Path(path))
+
+  override def withQuery(query: Query): Iri  = copy(query = query)
+  override def withQuery(query: String): Iri = withQuery(Query(query))
+
+  override def withFragment(fragment: Fragment): Iri = copy(fragment = fragment)
+  override def withFragment(fragment: String): Iri   = withFragment(Fragment(fragment))
+
+  override def relativize(iri: Iri): Iri = iri match {
+    case strictIri @ StrictIri(s, a, p, _, _) =>
+      if (s.nonEmpty && s != scheme) iri
+      else if (a.nonEmpty && strictIri.normalizedAuthority != normalizedAuthority) iri
+      else strictIri.copy(scheme = Scheme.empty, authority = Authority.empty, path = path.relativize(p))
+    case lazyIri @ LazyIri(s, a, p, _, _) =>
+      if (s.nonEmpty && !s.contains(scheme.toString)) lazyIri
+      else if (a.nonEmpty && !lazyIri.rawNormalizedAuthority.contains(normalizedAuthority.toString)) lazyIri
+      else {
+        val rawRelPath = lazyIri.pathResult.map(p => path.relativize(p).toString).toOption.orElse(p)
+        lazyIri.copy(rawScheme = None, rawAuthority = None, rawPath = rawRelPath)
+      }
+  }
+
+  override def resolve(iri: Iri): Iri = iri match {
+    case strictIri @ StrictIri(s, a, p, _, _) =>
+      if (s.nonEmpty) strictIri
+      else if (a.nonEmpty) strictIri.copy(scheme = scheme)
+      else strictIri.copy(scheme = scheme, authority = authority, path = path.resolve(p))
+    case lazyIri @ LazyIri(s, a, p, _, _) =>
+      if (s.nonEmpty) lazyIri
+      else if (a.nonEmpty) lazyIri.withScheme(scheme)
+      else {
+        val rawResPath = lazyIri.pathResult.map(p => path.resolve(p).toString).toOption.orElse(p)
+        lazyIri.copy(
+          rawScheme = rawString(scheme.toString),
+          rawAuthority = rawString(authority.toString),
+          rawPath = rawResPath)
+      }
+  }
+
+  override def toString: String = {
+    val b = new StringBuilder()
+    if (scheme.nonEmpty) b.append(s"$scheme://")
+    if (normalizedAuthority.nonEmpty) b.append(normalizedAuthority)
+    if (normalizedPath.nonEmpty) b.append(normalizedPath)
+    if (query.nonEmpty) b.append(s"?$query")
+    if (fragment.nonEmpty) b.append(s"#$fragment")
+    b.toString
+  }
+}
+
+final case class LazyIri(
+    rawScheme: Option[String] = None,
+    rawAuthority: Option[String] = None,
+    rawPath: Option[String] = None,
+    rawQuery: Option[String] = None,
+    rawFragment: Option[String] = None
+) extends Iri {
+
+  import Iri._
+
+  private[capturl] lazy val schemeResult: Try[Scheme] = rawScheme match {
+    case Some(s) => SchemeParser(s).phrase(_.scheme)(DeliveryScheme.Try)
+    case None    => Success(Scheme.empty)
+  }
+
+  private[capturl] lazy val authorityResult: Try[Authority] = rawAuthority match {
+    case Some(a) => AuthorityParser(a).phrase(_.iauthority)(DeliveryScheme.Try)
+    case None    => Success(Authority.empty)
+  }
+
+  private[capturl] lazy val pathResult: Try[Path] = rawPath match {
+    case Some(p) => PathParser(p).phrase(_.ipath)(DeliveryScheme.Try)
+    case None    => Success(Path.empty)
+  }
+
+  private[capturl] lazy val queryResult: Try[Query] = rawQuery match {
+    case Some(q) => QueryParser(q).phrase(_.iquery)(DeliveryScheme.Try)
+    case None    => Success(Query.empty)
+  }
+
+  private[capturl] lazy val fragmentResult: Try[Fragment] = rawFragment match {
+    case Some(f) => FragmentParser(f).phrase(_.ifragment)(DeliveryScheme.Try)
+    case None    => Success(Fragment.empty)
+  }
+
+  private[capturl] lazy val iriResult: Try[StrictIri] = for {
+    s <- schemeResult
+    a <- authorityResult
+    p <- pathResult
+    q <- queryResult
+    f <- fragmentResult
+  } yield StrictIri(s, a, p, q, f)
+
+  override def scheme: Scheme       = schemeResult.get
+  override def authority: Authority = authorityResult.get
+  override def path: Path           = pathResult.get
+  override def query: Query         = queryResult.get
+  override def fragment: Fragment   = fragmentResult.get
+  override def toStrict: StrictIri  = iriResult.get
+
+  private[capturl] lazy val rawNormalizedAuthority: Option[String] = {
+    val normalizedAuthorityResult = for {
+      s <- schemeResult
+      a <- authorityResult
+    } yield normalizeAuthority(s, a).toString
+    normalizedAuthorityResult.toOption.orElse(rawAuthority)
+  }
+
+  private[capturl] lazy val rawNormalizedPath: Option[String] = {
+    if (rawScheme.nonEmpty || rawAuthority.nonEmpty) {
+      rawPath.map(p => if (p.startsWith("/")) p else s"/$p").orElse(Some("/"))
+    } else {
+      rawPath
+    }
+  }
+
+  override def isValid: Boolean = iriResult.isSuccess
+
+  override def withScheme(scheme: Scheme): Iri = withScheme(scheme.toString)
+  override def withScheme(scheme: String): Iri = copy(rawScheme = rawString(scheme))
+
+  override def withAuthority(authority: Authority): Iri = withAuthority(authority.toString)
+  override def withAuthority(authority: String): Iri    = copy(rawAuthority = rawString(authority))
+
+  override def withPath(path: Path): Iri   = withPath(path.toString)
+  override def withPath(path: String): Iri = copy(rawPath = rawString(path))
+
+  override def withQuery(query: Query): Iri  = withQuery(query.toString)
+  override def withQuery(query: String): Iri = copy(rawQuery = rawString(query))
+
+  override def withFragment(fragment: Fragment): Iri = withFragment(fragment.toString)
+  override def withFragment(fragment: String): Iri   = copy(rawFragment = rawString(fragment))
+
+  override def relativize(iri: Iri): Iri = iri match {
+    case strictIri @ StrictIri(s, a, p, _, _) =>
+      if (s.nonEmpty && !rawScheme.contains(s.toString)) strictIri
+      else if (a.nonEmpty && !rawNormalizedAuthority.contains(strictIri.normalizedAuthority.toString)) strictIri
+      else {
+        val relPath = pathResult.map(_.relativize(p)).getOrElse(p)
+        strictIri.copy(scheme = Scheme.empty, authority = Authority.empty, path = relPath)
+      }
+    case lazyIri @ LazyIri(s, a, p, _, _) =>
+      if (s.nonEmpty && s != rawScheme) lazyIri
+      else if (a.nonEmpty && lazyIri.rawNormalizedAuthority != rawNormalizedAuthority) lazyIri
+      else {
+        val rawRelPath = (for {
+          basePath   <- pathResult
+          targetPath <- lazyIri.pathResult
+        } yield basePath.relativize(targetPath).toString).toOption.orElse(p)
+        lazyIri.copy(rawScheme = None, rawAuthority = None, rawPath = rawRelPath)
+      }
+  }
+
+  override def resolve(iri: Iri): Iri = iri match {
+    case strictIri @ StrictIri(s, a, p, q, f) =>
+      if (s.nonEmpty) {
+        strictIri
+      } else if (a.nonEmpty) {
+        schemeResult
+          .map(baseScheme => strictIri.copy(scheme = baseScheme))
+          .getOrElse {
+            LazyIri(
+              rawScheme,
+              rawString(a.toString),
+              rawString(p.toString),
+              rawString(q.toString),
+              rawString(f.toString))
+          }
+      } else {
+        val resolvedResult = for {
+          baseScheme    <- schemeResult
+          baseAuthority <- authorityResult
+          basePath      <- pathResult
+        } yield strictIri.copy(scheme = baseScheme, baseAuthority, path = basePath.resolve(p))
+        resolvedResult.getOrElse {
+          LazyIri(rawScheme, rawAuthority, rawString(p.toString), rawString(q.toString), rawString(f.toString))
+        }
+      }
+    case lazyIri @ LazyIri(s, a, p, _, _) =>
+      if (s.nonEmpty) lazyIri
+      else if (a.nonEmpty) lazyIri.copy(rawScheme = rawScheme)
+      else {
+        val rawResPath = (for {
+          basePath   <- pathResult
+          targetPath <- lazyIri.pathResult
+        } yield basePath.resolve(targetPath).toString).toOption.orElse(p)
+        lazyIri.copy(rawScheme = rawScheme, rawAuthority = rawAuthority, rawPath = rawResPath)
+      }
+  }
+
+  override def toString: String = {
+    val b = new StringBuilder()
+    rawScheme.foreach(s => b.append(s"${schemeResult.getOrElse(s)}://"))
+    rawNormalizedAuthority.foreach(b.append)
+    rawNormalizedPath.foreach(b.append)
+    rawQuery.foreach(q => b.append(s"?${queryResult.getOrElse(q)}"))
+    rawFragment.foreach(f => b.append(s"#${fragmentResult.getOrElse(f)}"))
+    b.toString
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: StrictIri if isValid => toStrict.equals(that)
+    case _                          => super.equals(other)
+  }
+
+  override def hashCode(): Int = {
+    if (isValid) toStrict.hashCode() else super.hashCode()
   }
 }

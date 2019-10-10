@@ -108,8 +108,8 @@ trait UriConverters {
     case Fragment.Identifier(value) => Some(value)
   }
 
-  implicit def fromAkkaUri(uri: Uri): Iri = {
-    Iri(uri.scheme, uri.authority, uri.path, uri.query(), uri.fragment)
+  implicit def fromAkkaUri(uri: Uri): StrictIri = {
+    StrictIri(uri.scheme, uri.authority, uri.path, uri.query(), uri.fragment)
   }
 
   implicit def toAkkaUri(iri: Iri): Uri = {
