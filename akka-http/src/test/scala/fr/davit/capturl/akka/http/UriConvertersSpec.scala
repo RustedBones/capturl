@@ -9,102 +9,189 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
   import UriConverters._
 
-  "UriConverters" should "convert a akka scheme to capturl" in {
-    ("": Scheme) shouldBe Scheme.Empty
-    ("http": Scheme) shouldBe Scheme.Protocol("http")
+  "UriConverters" should "convert schemes" in {
+    {
+      val akkaScheme = ""
+      val scheme = Scheme.empty
+      (akkaScheme: Scheme) shouldBe scheme
+      (scheme: String) shouldBe akkaScheme
+    }
+
+    {
+      val akkaScheme = "http"
+      val scheme = Scheme.HTTP
+      (akkaScheme: Scheme) shouldBe scheme
+      (scheme: String) shouldBe akkaScheme
+    }
   }
 
-  it should "convert a capturl scheme to string" in {
-    (Scheme.Empty: String) shouldBe ""
-    (Scheme.Protocol("http"): String) shouldBe "http"
+  it should "convert hosts" in {
+    {
+      val akkaHost = Uri.Host.Empty
+      val host = Host.empty
+      (akkaHost: Host) shouldBe host
+      (host: Uri.Host) shouldBe akkaHost
+    }
+
+    {
+      val ipv4 = Array.fill[Byte](4)(0)
+      val akkaHost = Uri.IPv4Host(ipv4)
+      val host = Host.IPv4Host(ipv4)
+      (akkaHost: Host) shouldBe host
+      (host: Uri.Host) shouldBe akkaHost
+    }
+
+    {
+      val ipv6 = Array.fill[Byte](16)(0)
+      val akkaHost = Uri.IPv6Host(ipv6)
+      val host = Host.IPv6Host(ipv6)
+      (akkaHost: Host) shouldBe host
+      (host: Uri.Host) shouldBe akkaHost
+    }
+
+    {
+      val domain = "example.com"
+      val akkaHost = Uri.NamedHost(domain)
+      val host = Host.NamedHost("example.com")
+      (akkaHost: Host) shouldBe host
+      (host: Uri.Host) shouldBe akkaHost
+    }
+
+    {
+      val akkaHost = Uri.NamedHost("xn--d1abbgf6aiiy.xn--p1ai")
+      val host = Host.NamedHost("президент.рф")
+      (akkaHost: Host) shouldBe host
+      (host: Uri.Host) shouldBe akkaHost
+    }
   }
 
-  it should "convert a Uri.Host to capturl" in {
-    (Uri.Host.Empty: Host) shouldBe Host.Empty
-    (Uri.IPv4Host(Array.fill[Byte](4)(0)): Host) shouldBe Host.IPv4Host(List.fill[Byte](4)(0))
-    (Uri.IPv6Host(Array.fill[Byte](16)(0)): Host) shouldBe Host.IPv6Host(List.fill[Byte](16)(0))
-    (Uri.NamedHost("example.com"): Host) shouldBe Host.NamedHost("example.com")
+  it should "convert user info" in {
+    {
+      val akkaUserInfo = ""
+      val userInfo = UserInfo.empty
+      (akkaUserInfo: UserInfo) shouldBe userInfo
+      (userInfo: String) shouldBe akkaUserInfo
+    }
+
+    {
+      val akkaUserInfo = "user:password"
+      val userInfo = UserInfo.Credentials("user:password")
+      (akkaUserInfo: UserInfo) shouldBe userInfo
+      (userInfo: String) shouldBe akkaUserInfo
+    }
   }
 
-  it should "convert a capturl host to Uri.Host" in {
-    (Host.Empty: Uri.Host) shouldBe Uri.Host.Empty
-    (Host.IPv4Host(List.fill[Byte](4)(0)): Uri.Host) shouldBe Uri.IPv4Host(Array.fill[Byte](4)(0))
-    (Host.IPv6Host(List.fill[Byte](16)(0)): Uri.Host) shouldBe Uri.IPv6Host(Array.fill[Byte](16)(0))
-    (Host.NamedHost("example.com"): Uri.Host) shouldBe Uri.NamedHost("example.com")
+  it should "convert port" in {
+    {
+      val akkaPort = 0
+      val port = Port.empty
+      (akkaPort: Port) shouldBe port
+      (port: Int) shouldBe akkaPort
+    }
+
+    {
+      val akkaPort = 8080
+      val port = Port.Number(8080)
+      (akkaPort: Port) shouldBe port
+      (port: Int) shouldBe akkaPort
+    }
   }
 
-  it should "convert akka user info to capturl" in {
-    ("": UserInfo) shouldBe UserInfo.Empty
-    ("user:password": UserInfo) shouldBe UserInfo.Credentials("user:password")
+  it should "convert authority" in {
+    {
+      val akkaAuthority = Uri.Authority.Empty
+      val authority = Authority.empty
+      (akkaAuthority: Authority) shouldBe authority
+      (authority: Uri.Authority) shouldBe akkaAuthority
+    }
+
+    {
+      val akkaAuthority = Uri.Authority(Uri.NamedHost("example.com"), 8080, "user:password")
+      val authority = Authority(Host.NamedHost("example.com"), Port.Number(8080), UserInfo.Credentials("user:password"))
+      (akkaAuthority: Authority) shouldBe authority
+      (authority: Uri.Authority) shouldBe akkaAuthority
+    }
   }
 
-  it should "convert a capturl user info to String" in {
-    (UserInfo.Empty: String) shouldBe ""
-    ( UserInfo.Credentials("user:password"): String) shouldBe "user:password"
+  it should "convert path" in {
+    {
+      val akkaPath = Uri.Path.Empty
+      val path = Path.empty
+      (akkaPath: Path) shouldBe path
+      (path: Uri.Path) shouldBe akkaPath
+    }
+
+    {
+      val akkaPath = Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty)))
+      val path = Segment("directory", Slash(Segment("file.html")))
+      (akkaPath: Path) shouldBe path
+      (path: Uri.Path) shouldBe akkaPath
+    }
   }
 
-  it should "convert a akka port to capturl" in {
-    (0: Port) shouldBe Port.Empty
-    (8080: Port) shouldBe Port.Number(8080)
+  it should "convert query" in {
+    {
+      val akkaQuery = Uri.Query.Empty
+      val query = Query.empty
+      (akkaQuery: Query) shouldBe query
+      (query: Uri.Query) shouldBe akkaQuery
+      (query: Option[String]) shouldBe empty
+    }
+
+    {
+      val akkaQuery = Uri.Query.Cons("key", "value", Uri.Query.Empty)
+      val query = Query.Part("key", Some("value"))
+      (akkaQuery: Query) shouldBe query
+      (query: Uri.Query) shouldBe akkaQuery
+      (query: Option[String]) shouldBe Some("key=value")
+    }
   }
 
-  it should "convert a capturl port to Int" in {
-    (Port.Empty: Int) shouldBe 0
-    (Port.Number(8080): Int) shouldBe 8080
+  it should "convert fragment" in {
+    {
+      val akkaFragment = None
+      val fragment = Fragment.empty
+      (akkaFragment: Fragment) shouldBe fragment
+      (fragment: Option[String]) shouldBe akkaFragment
+    }
+
+    {
+      val akkaFragment = Some("identifier")
+      val fragment = Fragment.Identifier("identifier")
+      (akkaFragment: Fragment) shouldBe fragment
+      (fragment: Option[String]) shouldBe akkaFragment
+    }
   }
 
-  it should "convert a Uri.Authority to capturl" in {
-    (Uri.Authority.Empty: Authority) shouldBe Authority.empty
-    (Uri.Authority(Uri.NamedHost("example.com"), 8080, "user:password"): Authority) shouldBe Authority(
-      Host.NamedHost("example.com"),
-      Port.Number(8080),
-      UserInfo.Credentials("user:password")
-    )
-  }
+  it should "convert Uri / Iri" in {
+    {
+      val uri = Uri()
+      val iri = Iri.empty
+      (uri: Iri) shouldBe iri
+      (iri: Uri) shouldBe uri
+    }
 
-  it should "convert a capturl authority to Uri.Authority" in {
-    (Authority.empty: Uri.Authority) shouldBe Uri.Authority.Empty
-    (Authority(
-      Host.NamedHost("example.com"),
-      Port.Number(8080),
-       UserInfo.Credentials("user:password")
-    ): Uri.Authority) shouldBe Uri.Authority(Uri.NamedHost("example.com"), 8080, "user:password")
-  }
+    {
+      val uri = Uri("http://example.com/directory/file.html?key=value#identifier")
+      val iri = Iri("http://example.com/directory/file.html?key=value#identifier")
+      (uri: Iri) shouldBe iri
+      (iri: Uri) shouldBe uri
+    }
 
-  it should "convert a Uri.Path to capturl" in {
-    (Uri.Path.Empty: Path) shouldBe Path.empty
-    (Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty))): Path) shouldBe Segment("directory", Slash(Segment("file.html")))
-  }
+    {
+      // unicode iri
+      val uri = Uri("http://xn--d1abbgf6aiiy.xn--p1ai/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B")
+      val iri = Iri("http://президент.рф/документы")
+      (uri: Iri) shouldBe iri
+      (iri: Uri) shouldBe uri
+    }
 
-  it should "convert a capturl path to Uri.Path" in {
-    (Path.empty: Uri.Path) shouldBe Uri.Path.Empty
-    (Segment("directory", Slash(Segment("file.html"))) : Uri.Path) shouldBe Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty)))
+    {
+      // lazy iri (broken query)
+      val uri = Uri("http://example.com/?wrong%encoding")
+      val iri = Iri("http://example.com/?wrong%encoding", Iri.ParsingMode.Lazy)
+      (uri: Iri) shouldBe iri
+      (iri: Uri) shouldBe uri
+    }
   }
-
-  it should "convert a Uri.Query to capturl" in {
-    (Uri.Query.Empty: Query) shouldBe Query.Empty
-    (Uri.Query.Cons("key", "value", Uri.Query.Empty): Query) shouldBe Query.Part("key", Some("value"), Query.Empty)
-  }
-
-  it should "convert a capturl query to Uri.Query" in {
-    (Query.Empty: Uri.Query) shouldBe Uri.Query.Empty
-    (Query.Part("key", Some("value"), Query.Empty): Uri.Query) shouldBe Uri.Query.Cons("key", "value", Uri.Query.Empty)
-  }
-
-  it should "convert a capturl query to Option[String]" in {
-    (Query.Empty: Option[String]) shouldBe empty
-    (Query.Part("key", None, Query.Empty): Option[String]) shouldBe Some("key")
-    (Query.Part("key", Some("value"), Query.Empty): Option[String]) shouldBe Some("key=value")
-  }
-
-  it should "convert a akka fragment to capturl" in {
-    (Option.empty[String]: Fragment) shouldBe Fragment.Empty
-    (Option("identifier"): Fragment) shouldBe Fragment.Identifier("identifier")
-  }
-
-  it should "convert a capturl fragment to Option[String]" in {
-    (Fragment.Empty: Option[String]) shouldBe empty
-    (Fragment.Identifier("identifier"): Option[String]) shouldBe Some("identifier")
-  }
-
 }

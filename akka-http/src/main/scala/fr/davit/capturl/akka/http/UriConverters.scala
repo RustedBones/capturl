@@ -8,6 +8,7 @@ import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash, SlashOrEmpty}
 import fr.davit.capturl.scaladsl._
 
 import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 trait UriConverters {
 
@@ -22,7 +23,7 @@ trait UriConverters {
     case Uri.Host.Empty         => Host.Empty
     case Uri.IPv4Host(bytes, _) => Host.IPv4Host(bytes)
     case Uri.IPv6Host(bytes, _) => Host.IPv6Host(bytes)
-    case Uri.NamedHost(address) => Host.NamedHost(address)
+    case Uri.NamedHost(address) => Host.NamedHost(IDN.toUnicode(address))
   }
 
   implicit def toAkkaHost[T <: Host](host: Host): Uri.Host = host match {
@@ -108,12 +109,37 @@ trait UriConverters {
     case Fragment.Identifier(value) => Some(value)
   }
 
-  implicit def fromAkkaUri(uri: Uri): StrictIri = {
-    StrictIri(uri.scheme, uri.authority, uri.path, uri.query(), uri.fragment)
+  implicit def fromAkkaUri(uri: Uri): Iri = {
+    Try(uri.query()) match {
+      case Success(q) =>
+        StrictIri(uri.scheme, uri.authority, uri.path, q, uri.fragment)
+      case Failure(_) =>
+        LazyIri(
+          Iri.rawString(uri.scheme),
+          Iri.rawString(uri.authority.toString),
+          Iri.rawString(uri.path.toString),
+          uri.rawQueryString,
+          uri.fragment
+        )
+    }
+
   }
 
-  implicit def toAkkaUri(iri: Iri): Uri = {
-    Uri(iri.scheme, iri.authority, iri.path, iri.query, iri.fragment)
+  implicit def toAkkaUri(iri: Iri): Uri = iri match {
+    case StrictIri(s, a, p, q, f) => Uri(s, a, p, q, f)
+    case lazyIri @ LazyIri(_, _, _, rq, rf) =>
+      val uriResult = for {
+        s <- lazyIri.schemeResult
+        a <- lazyIri.authorityResult
+        p <- lazyIri.pathResult
+      } yield {
+        // query and fragment are 'lazyly' parsed in akka Uri
+        // in case of non RFC compliant, create the Uri with the raw string
+        val q = lazyIri.queryResult.map(_.toString).toOption.orElse(rq)
+        val f = lazyIri.queryResult.map(_.toString).toOption.orElse(rf)
+        Uri(s, a, p, q, f)
+      }
+      uriResult.get
   }
 
 }
