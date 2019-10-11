@@ -50,7 +50,8 @@ trait RichStringBuilding extends StringBuilding { this: Parser =>
   }
 
   protected def ipchar: Rule0 = rule {
-    iunreserved | `pct-encoded` | `sub-delims` | CharPredicate(':', '@') ~ appendSB()
+    // TODO allow space only in 'relax' mode
+    iunreserved | `pct-encoded` | `sub-delims` | CharPredicate(':', '@', ' ') ~ appendSB()
   }
 
   protected lazy val privateCodePoints = Seq(

@@ -15,7 +15,7 @@ class SchemeParserSpec extends FlatSpec with Matchers {
   "SchemeParser" should "parse scheme" in new Fixture {
     parse("file://my_file.txt") shouldBe Scheme.File -> "://my_file.txt"
     parse("http://example.com") shouldBe Scheme.HTTP -> "://example.com"
-    parse("data:123456") shouldBe Scheme("data") -> ":123456"
+    parse("data:123456") shouldBe Scheme("data")     -> ":123456"
 
     parse("HTTP://example.com") shouldBe Scheme.HTTP -> "://example.com"
 

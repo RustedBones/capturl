@@ -16,7 +16,8 @@ trait QueryParser extends RichStringBuilding { this: Parser =>
 
 
   def spaces: Rule0 = rule {
-    '+' ~ appendSB(' ')
+    // TODO allow space only in 'relax' mode
+    CharPredicate('+', ' ') ~ appendSB(' ')
   }
 
   def `part-sub-delims`: Rule0 = rule {
