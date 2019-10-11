@@ -47,6 +47,6 @@ trait PathParser extends RichStringBuilding {
   }
 
   def ipath: Rule1[Path] = rule {
-    `ipath-rootless` | `ipath-absolute` | `ipath-abempty` | `ipath-empty`
+    (`ipath-rootless` | `ipath-absolute` | `ipath-abempty` | `ipath-empty`) ~> ((path: Path) => path.normalize())
   }
 }

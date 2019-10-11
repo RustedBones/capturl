@@ -30,14 +30,22 @@ public abstract class Iri {
     //------------------------------------------------------------------------------------------------------------------
     // Scheme
     //------------------------------------------------------------------------------------------------------------------
+    public abstract boolean isSchemeValid();
+
     public abstract String getScheme();
+
+    public abstract String getRawScheme();
 
     public abstract Iri withScheme(String scheme);
 
     //------------------------------------------------------------------------------------------------------------------
     // Authority
     //------------------------------------------------------------------------------------------------------------------
+    public abstract boolean isAuthorityValid();
+
     public abstract Authority getAuthority();
+
+    public abstract String getRawAuthority();
 
     public abstract Iri withAuthority(Authority authority);
 
@@ -46,7 +54,11 @@ public abstract class Iri {
     //------------------------------------------------------------------------------------------------------------------
     // Path
     //------------------------------------------------------------------------------------------------------------------
+    public abstract boolean isPathValid();
+
     public abstract Path getPath();
+
+    public abstract String getRawPath();
 
     public abstract Iri withPath(Path path);
 
@@ -56,7 +68,11 @@ public abstract class Iri {
     //------------------------------------------------------------------------------------------------------------------
     // Query
     //------------------------------------------------------------------------------------------------------------------
+    public abstract boolean isQueryValid();
+
     public abstract Query getQuery();
+
+    public abstract String getRawQuery();
 
     public abstract Iri withQuery(Query query);
 
@@ -65,7 +81,11 @@ public abstract class Iri {
     //------------------------------------------------------------------------------------------------------------------
     // Fragment
     //------------------------------------------------------------------------------------------------------------------
+    public abstract boolean isFragmentValid();
+
     public abstract String getFragment();
+
+    public abstract String getRawFragment();
 
     public abstract Iri withFragment(String fragment);
 
