@@ -356,7 +356,7 @@ final case class LazyIri(
     val rawNormalizedPath = Iri.normalizeRawPath(rawScheme, rawAuthority, rawPath)
     val b = new StringBuilder()
     rawScheme.foreach(s => b.append(s"${schemeResult.getOrElse(s)}:"))
-    rawAuthority.foreach(a => b.append(s"${normalizedAuthorityResult.getOrElse(a)}:"))
+    rawAuthority.foreach(a => b.append(s"//${normalizedAuthorityResult.getOrElse(a)}"))
     rawNormalizedPath.foreach(p => b.append(normalizedPathResult.getOrElse(p)))
     rawQuery.foreach(q => b.append(s"?${queryResult.getOrElse(q)}"))
     rawFragment.foreach(f => b.append(s"#${fragmentResult.getOrElse(f)}"))
