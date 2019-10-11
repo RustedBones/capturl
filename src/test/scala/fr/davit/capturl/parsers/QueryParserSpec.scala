@@ -14,7 +14,11 @@ class QueryParserSpec extends FlatSpec with Matchers {
   }
 
   "QueryParser" should "parse query" in new Fixture {
-    parse("key1=val1&key2#fragment") shouldBe Query.Part("key1", Some("val1"), Query.Part("key2", None, Query.Empty)) -> "#fragment"
+    parse("#fragment") shouldBe Query.Part("") -> "#fragment"
+    parse("key1=val1&key2#fragment") shouldBe Query.Part("key1", Some("val1"), Query.Part("key2")) -> "#fragment"
+
+    // relax parsing
+    parse("key with+spaces#fragment") shouldBe Query.Part("key with spaces") -> "#fragment"
   }
 
 }

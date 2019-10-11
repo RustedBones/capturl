@@ -24,6 +24,8 @@ libraryDependencies += "fr.davit" %% "capturl" % <version>
 All the `apply`/`create` methods accepting String input will be validated against 
 [RFC 3987](https://tools.ietf.org/rfc/rfc3987.txt) compliant parsers to create the model classes.
 
+**Warning**: Exception is made for spaces in path, query and fragment which are allowed at the moment (see TODOs)
+
 If you are sure about your input, and want to skip validation for efficiency reason, you can construct the models
 using the implementation classes. eg:
 
@@ -83,7 +85,7 @@ val iri = iri"http://user{info@example.com/"
 
 ### TODO
 
-- provide relax parsers
+- provide strict / relax parser mode
 - provide more normalization options
 - support holes in interpolation 
 - support scala 2.13
