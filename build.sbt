@@ -4,7 +4,7 @@ val repo     = "capturl"
 
 lazy val commonSettings = Seq(
   organization := "fr.davit",
-  version := "0.2.0-SNAPSHOT",
+  version := "0.2.1-SNAPSHOT",
   crossScalaVersions := Seq("2.11.12", "2.12.10"), //, "2.13.0"),
   scalaVersion := crossScalaVersions.value.last,
   Compile / compile / scalacOptions ++= Settings.scalacOptions(scalaVersion.value),
@@ -41,7 +41,7 @@ lazy val `capturl-contextual` = (project in file("contextual"))
   .dependsOn(`capturl`)
   .settings(commonSettings: _*)
   .settings(
-    crossScalaVersions := Seq( "2.12.8"), // no support fo 2.11
+    crossScalaVersions := Seq("2.12.8"), // no support fo 2.11
     scalaVersion := crossScalaVersions.value.last,
     libraryDependencies ++= Seq(
       Dependencies.contextual,
