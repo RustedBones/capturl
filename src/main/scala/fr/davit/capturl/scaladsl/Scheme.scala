@@ -2,7 +2,9 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.SchemeParser
 import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
-import org.parboiled2.Parser.DeliveryScheme.Throw
+import org.parboiled2.Parser.DeliveryScheme
+
+import scala.util.{Success, Try}
 
 sealed trait Scheme extends OptionalPart[String]
 
@@ -22,14 +24,20 @@ object Scheme {
     registry += protocol -> Authority.Port.Number(defaultPort)
   }
 
-  def apply(scheme: String): Scheme = {
-    if (scheme.isEmpty) Scheme.Empty else SchemeParser(scheme).phrase(_.scheme)
-  }
+  def apply(scheme: String): Scheme = parse(scheme).get
 
   def apply(scheme: String, defaultPort: Int): Scheme = {
     val s = apply(scheme)
     register(s, defaultPort)
     s
+  }
+
+  def parse(scheme: String): Try[Scheme] = {
+    if (scheme.isEmpty) {
+      Success(Scheme.Empty)
+    } else {
+      SchemeParser(scheme).phrase(_.scheme, "scheme")(DeliveryScheme.Try)
+    }
   }
 
   def defaultPort(scheme: Scheme): Option[Authority.Port.Number] = registry.get(scheme)

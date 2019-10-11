@@ -6,9 +6,10 @@ import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.AuthorityParser
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
-import org.parboiled2.Parser.DeliveryScheme.Throw
+import org.parboiled2.Parser.DeliveryScheme
 
 import scala.compat.java8.OptionConverters._
+import scala.util.{Success, Try}
 
 final case class Authority(host: Host = Host.empty, port: Port = Port.empty, userInfo: UserInfo = UserInfo.empty)
     extends javadsl.Authority {
@@ -43,8 +44,10 @@ object Authority {
 
   val empty: Authority = Authority()
 
-  def apply(authority: String): Authority = {
-    AuthorityParser(authority).phrase(_.iauthority)
+  def apply(authority: String): Authority = parse(authority).get
+
+  def parse(authority: String): Try[Authority] = {
+    AuthorityParser(authority).phrase(_.iauthority, "authority")(DeliveryScheme.Try)
   }
 
   trait Port extends OptionalPart[Int]
@@ -70,9 +73,14 @@ object Authority {
   object UserInfo {
     val empty: UserInfo = Empty
 
-    def apply(userInfo: String): UserInfo = userInfo match {
-      case "" => Empty
-      case _  => AuthorityParser(userInfo).phrase(_.iuserinfo)
+    def apply(userInfo: String): UserInfo = parse(userInfo).get
+
+    def parse(userInfo: String): Try[UserInfo] = {
+      if (userInfo.isEmpty) {
+        Success(UserInfo.Empty)
+      } else {
+        AuthorityParser(userInfo).phrase(_.iuserinfo, "userinfo")(DeliveryScheme.Try)
+      }
     }
 
     case object Empty extends UserInfo with EmptyPart

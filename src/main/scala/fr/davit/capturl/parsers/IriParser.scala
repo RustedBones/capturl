@@ -38,7 +38,7 @@ trait IriParser
   }
 
   def IRI: Rule1[StrictIri] = rule {
-    ((`iabsolute-part` | `irelative-part`) ~ atomic("?" ~ iquery).?.named("query") ~ atomic("#" ~ ifragment).?.named("fragment") ~ EOI) ~> {
+    ((`iabsolute-part` | `irelative-part`) ~ atomic("?" ~ iquery).?.named("query") ~ atomic("#" ~ ifragment).?.named("fragment")) ~> {
       (scheme: Scheme, authority: Authority, path: Path, query: Option[Query], fragment: Option[Fragment]) =>
         StrictIri(scheme, authority, path, query.getOrElse(Query.empty), fragment.getOrElse(Fragment.empty))
     }
@@ -68,7 +68,7 @@ trait IriParser
   }
 
   def IRILazy: Rule1[LazyIri] = rule {
-    (rawScheme ~ rawAuthority ~ rawPath ~ rawQuery ~ rawFragment ~ EOI) ~> {
+    (rawScheme ~ rawAuthority ~ rawPath ~ rawQuery ~ rawFragment) ~> {
       (scheme: Option[String], authority: Option[String], path: Option[String], query: Option[String], fragment: Option[String]) =>
         LazyIri(scheme, authority, path, query, fragment)
     }
