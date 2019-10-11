@@ -14,13 +14,11 @@ class PathParserSpec extends FlatSpec with Matchers {
   }
 
   "PathParser" should "parse path" in new Fixture {
-    parse("/?query") shouldBe Path.root                                                       -> "?query"
-    parse("?query") shouldBe Path.empty                                                       -> "?query"
-    parse("/absolute/path?query") shouldBe Slash(Segment("absolute", Slash(Segment("path")))) -> "?query"
-    parse("relative/path?query") shouldBe Segment("relative", Slash(Segment("path")))         -> "?query"
-
-    // unnormalized paths
-    parse("directory/?query") shouldBe Path.Segment("directory", Slash(Segment("")))                     -> "?query"
+    parse("/?query") shouldBe Path.root                                                                  -> "?query"
+    parse("?query") shouldBe Path.empty                                                                  -> "?query"
+    parse("/absolute/path?query") shouldBe Slash(Segment("absolute", Slash(Segment("path"))))            -> "?query"
+    parse("relative/path?query") shouldBe Segment("relative", Slash(Segment("path")))                    -> "?query"
+    parse("directory/?query") shouldBe Path.Segment("directory", Slash())                                -> "?query"
     parse("/one//path?query") shouldBe Slash(Segment("one", Slash(Segment("", Slash(Segment("path")))))) -> "?query"
   }
 
