@@ -84,6 +84,18 @@ object Iri {
     if (scheme.nonEmpty || authority.nonEmpty) Path.root.resolve(path) else path
   }
 
+  def normalizeRawPath(scheme: Option[String], authority: Option[String], path: Option[String]): Option[String] = {
+    if (scheme.nonEmpty || authority.nonEmpty) {
+      path match {
+        case None                         => Some("/")
+        case Some(p) if p.startsWith("/") => Some(p)
+        case Some(p)                      => Some(s"/$p")
+      }
+    } else {
+      path
+    }
+  }
+
   sealed trait ParsingMode
 
   object ParsingMode {
@@ -341,10 +353,11 @@ final case class LazyIri(
   }
 
   override def toString: String = {
+    val rawNormalizedPath = Iri.normalizeRawPath(rawScheme, rawAuthority, rawPath)
     val b = new StringBuilder()
     rawScheme.foreach(s => b.append(s"${schemeResult.getOrElse(s)}:"))
     rawAuthority.foreach(a => b.append(s"${normalizedAuthorityResult.getOrElse(a)}:"))
-    rawPath.foreach(p => b.append(normalizedPathResult.getOrElse(p)))
+    rawNormalizedPath.foreach(p => b.append(normalizedPathResult.getOrElse(p)))
     rawQuery.foreach(q => b.append(s"?${queryResult.getOrElse(q)}"))
     rawFragment.foreach(f => b.append(s"#${fragmentResult.getOrElse(f)}"))
     b.toString
