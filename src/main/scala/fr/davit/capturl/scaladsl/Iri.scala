@@ -2,6 +2,7 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers._
+import org.parboiled2.ParseError
 import org.parboiled2.Parser.DeliveryScheme
 import org.parboiled2.Parser.DeliveryScheme.Throw
 
@@ -109,12 +110,21 @@ object Iri {
     }
   }
 
+  final case class IriParseError(iri: String, e: ParseError)
+      extends RuntimeException(e.format(s"Error parsing $iri"), e)
+
   val empty: Iri = StrictIri()
 
-  def apply(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Iri = parsingMode match {
-    case ParsingMode.Strict => IriParser(iri).IRI.run()
-    case ParsingMode.Lazy   => IriParser(iri).IRILazy.run()
-  }
+  def apply(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Iri =
+    try {
+      parsingMode match {
+        case ParsingMode.Strict => IriParser(iri).IRI.run()
+        case ParsingMode.Lazy   => IriParser(iri).IRILazy.run()
+      }
+    } catch {
+      case e: ParseError => throw IriParseError(iri, e)
+    }
+
 }
 
 final case class StrictIri(
@@ -188,7 +198,8 @@ final case class StrictIri(
         lazyIri.copy(
           rawScheme = rawString(scheme.toString),
           rawAuthority = rawString(authority.toString),
-          rawPath = rawResPath)
+          rawPath = rawResPath
+        )
       }
   }
 
@@ -328,7 +339,8 @@ final case class LazyIri(
               rawString(a.toString),
               rawString(p.toString),
               rawString(q.toString),
-              rawString(f.toString))
+              rawString(f.toString)
+            )
           }
       } else {
         val resolvedResult = for {
@@ -354,7 +366,7 @@ final case class LazyIri(
 
   override def toString: String = {
     val rawNormalizedPath = Iri.normalizeRawPath(rawScheme, rawAuthority, rawPath)
-    val b = new StringBuilder()
+    val b                 = new StringBuilder()
     rawScheme.foreach(s => b.append(s"${schemeResult.getOrElse(s)}:"))
     rawAuthority.foreach(a => b.append(s"//${normalizedAuthorityResult.getOrElse(a)}"))
     rawNormalizedPath.foreach(p => b.append(normalizedPathResult.getOrElse(p)))
