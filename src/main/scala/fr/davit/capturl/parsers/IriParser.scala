@@ -60,7 +60,7 @@ trait IriParser
   }
 
   def rawQuery: Rule1[Option[String]] = rule {
-    optional('?' ~ capture(oneOrMore(!'#' ~ ANY)))
+    optional('?' ~ capture(zeroOrMore(!'#' ~ ANY)))
   }
 
   def rawFragment: Rule1[Option[String]] = rule {

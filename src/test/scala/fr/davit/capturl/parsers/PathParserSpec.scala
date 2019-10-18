@@ -22,6 +22,10 @@ class PathParserSpec extends FlatSpec with Matchers {
     parse("directory/?query") shouldBe Path.Segment("directory", Slash())                                -> "?query"
     parse("/one//path?query") shouldBe Slash(Segment("one", Slash(Segment("", Slash(Segment("path")))))) -> "?query"
 
+    // path with empty query
+    parse("path?") shouldBe Segment("path")                                                              -> "?"
+    parse("path/?") shouldBe Path.Segment("path", Slash())                                               -> "?"
+
     // relax parsing
     parse("/path with spaces?query") shouldBe Slash(Segment("path with spaces")) -> "?query"
   }

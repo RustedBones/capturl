@@ -1,8 +1,10 @@
 package fr.davit.capturl
 
 import fr.davit.capturl.scaladsl.Authority.Port
+import fr.davit.capturl.scaladsl.Iri.ParsingMode.{Lazy, Strict}
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
+import org.parboiled2.ParseError
 import org.scalatest.{FlatSpec, Matchers}
 
 class IriSpec extends FlatSpec with Matchers {
@@ -115,6 +117,22 @@ class IriSpec extends FlatSpec with Matchers {
         .withPath(base.path)
     }
 
+  }
+
+  "LazyIri" should "parse at least everything that StrictIri parses" in {
+    val url = "http://example.com/path?query#fragment"
+    Iri(url, Lazy) shouldBe Iri(url, Strict)
+  }
+
+  it should "parse more than StrictIri parsers" in {
+    val url = "http://user{info@example.com/"
+    a[ParseError] shouldBe thrownBy(Iri(url, Strict))
+    noException shouldBe thrownBy(Iri(url, Lazy))
+  }
+
+  it should "accept empty queries" in {
+    Iri("path?", Lazy) shouldBe Iri("path?", Strict)
+    Iri("path?#fragment", Lazy) shouldBe Iri("path?#fragment", Strict)
   }
 
 }
