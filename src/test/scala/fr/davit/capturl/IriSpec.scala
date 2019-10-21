@@ -119,12 +119,7 @@ class IriSpec extends FlatSpec with Matchers {
 
   }
 
-  "LazyIri" should "parse at least everything that StrictIri parses" in {
-    val url = "http://example.com/path?query#fragment"
-    Iri(url, Lazy) shouldBe Iri(url, Strict)
-  }
-
-  it should "parse more than StrictIri parsers" in {
+  "LazyIri" should "parse more than StrictIri parsers" in {
     val url = "http://user{info@example.com/"
     a[ParseError] shouldBe thrownBy(Iri(url, Strict))
     noException shouldBe thrownBy(Iri(url, Lazy))
