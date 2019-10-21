@@ -127,6 +127,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
       (akkaPath: Path) shouldBe path
       (path: Uri.Path) shouldBe akkaPath
     }
+
+    // paths containing double slashes
+    {
+      val akkaPath = Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty))))
+      val path = Segment("directory", Slash(Slash(Segment("file.html"))))
+      (akkaPath: Path) shouldBe path
+      (path: Uri.Path) shouldBe akkaPath
+    }
   }
 
   it should "convert query" in {
