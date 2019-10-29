@@ -3,7 +3,6 @@ package fr.davit.capturl.scaladsl
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.PathParser
 import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash, SlashOrEmpty}
-import org.parboiled2.Parser.DeliveryScheme
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -153,7 +152,7 @@ object Path {
   def apply(path: String): Path = parse(path).get
 
   def parse(path: String): Try[Path] = {
-    PathParser(path).phrase(_.ipath, "path")(DeliveryScheme.Try)
+    PathParser(path).phrase(_.ipath, "path")
   }
 
   sealed trait SlashOrEmpty extends Path {
@@ -162,7 +161,7 @@ object Path {
 
   object Segment {
     def parse(segment: String): Try[Segment] = {
-      PathParser(segment).phrase(_.isegment, "segment")(DeliveryScheme.Try)
+      PathParser(segment).phrase(_.isegment, "segment")
     }
   }
 

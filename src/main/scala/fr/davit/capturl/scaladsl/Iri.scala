@@ -2,7 +2,6 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers._
-import org.parboiled2.Parser.DeliveryScheme
 
 import scala.util.{Success, Try}
 
@@ -112,9 +111,11 @@ object Iri {
 
   def apply(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Iri = parse(iri, parsingMode).get
 
-  def parse(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Try[Iri] = parsingMode match {
-    case ParsingMode.Strict => IriParser(iri).phrase(_.IRI, "iri")(DeliveryScheme.Try)
-    case ParsingMode.Lazy   => IriParser(iri).phrase(_.IRILazy, "iri")(DeliveryScheme.Try)
+  def parse(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Try[Iri] = {
+    parsingMode match {
+      case ParsingMode.Strict =>  IriParser(iri).phrase(_.IRI, "iri")
+      case ParsingMode.Lazy   =>  IriParser(iri).phrase(_.IRILazy, "iri")
+    }
   }
 }
 
@@ -355,7 +356,7 @@ final case class LazyIri(
 
   override def toString: String = {
     val rawNormalizedPath = Iri.normalizeRawPath(rawScheme, rawAuthority, rawPath)
-    val b = new StringBuilder()
+    val b                 = new StringBuilder()
     rawScheme.foreach(s => b.append(s"${schemeResult.getOrElse(s)}:"))
     rawAuthority.foreach(a => b.append(s"//${normalizedAuthorityResult.getOrElse(a)}"))
     rawNormalizedPath.foreach(p => b.append(normalizedPathResult.getOrElse(p)))

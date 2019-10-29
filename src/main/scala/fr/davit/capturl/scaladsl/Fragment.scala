@@ -2,7 +2,6 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.FragmentParser
 import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
-import org.parboiled2.Parser.DeliveryScheme
 
 import scala.util.{Success, Try}
 
@@ -18,7 +17,7 @@ object Fragment {
     if (fragment.isEmpty) {
       Success(Fragment.Empty)
     } else {
-      FragmentParser(fragment).phrase(_.ifragment, "fragment")(DeliveryScheme.Try)
+      FragmentParser(fragment).phrase(_.ifragment, "fragment")
     }
   }
 

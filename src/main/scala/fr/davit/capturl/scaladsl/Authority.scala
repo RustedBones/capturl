@@ -6,7 +6,6 @@ import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.AuthorityParser
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
-import org.parboiled2.Parser.DeliveryScheme
 
 import scala.compat.java8.OptionConverters._
 import scala.util.{Success, Try}
@@ -47,7 +46,7 @@ object Authority {
   def apply(authority: String): Authority = parse(authority).get
 
   def parse(authority: String): Try[Authority] = {
-    AuthorityParser(authority).phrase(_.iauthority, "authority")(DeliveryScheme.Try)
+    AuthorityParser(authority).phrase(_.iauthority, "authority")
   }
 
   trait Port extends OptionalPart[Int]
@@ -79,7 +78,7 @@ object Authority {
       if (userInfo.isEmpty) {
         Success(UserInfo.Empty)
       } else {
-        AuthorityParser(userInfo).phrase(_.iuserinfo, "userinfo")(DeliveryScheme.Try)
+        AuthorityParser(userInfo).phrase(_.iuserinfo, "userinfo")
       }
     }
 

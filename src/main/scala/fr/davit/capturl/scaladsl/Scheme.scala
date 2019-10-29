@@ -2,7 +2,6 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.parsers.SchemeParser
 import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
-import org.parboiled2.Parser.DeliveryScheme
 
 import scala.util.{Success, Try}
 
@@ -36,7 +35,7 @@ object Scheme {
     if (scheme.isEmpty) {
       Success(Scheme.Empty)
     } else {
-      SchemeParser(scheme).phrase(_.scheme, "scheme")(DeliveryScheme.Try)
+      SchemeParser(scheme).phrase(_.scheme, "scheme")
     }
   }
 

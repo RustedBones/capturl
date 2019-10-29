@@ -1,11 +1,11 @@
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.scaladsl._
-import org.parboiled2.{CharPredicate, Parser, Rule1, Rule2, RuleN}
+import org.parboiled2.{CharPredicate, Rule1, Rule2, RuleN}
 import shapeless.{Path => _, _}
 
 object IriParser {
-  def apply(iri: String): Parser with IriParser = {
+  def apply(iri: String): StringParser with IriParser = {
     new StringParser(iri) with IriParser
   }
 }
@@ -15,7 +15,7 @@ trait IriParser
     with AuthorityParser
     with PathParser
     with QueryParser
-    with FragmentParser { this: Parser =>
+    with FragmentParser { this: StringParser =>
 
   def `ihier-part`: Rule2[Authority, Path] = rule {
     ("//" ~ iauthority ~ atomic(`ipath-abempty`).named("absolute or empty path")) |

@@ -6,10 +6,6 @@ import shapeless._
 
 trait RichStringBuilding extends StringBuilding { this: Parser =>
 
-  def phrase[T](r: this.type  => Rule1[T], name: String)(implicit scheme: Parser.DeliveryScheme[T :: HNil]): scheme.Result = {
-    __run(rule(r(this).named(name) ~ EOI))
-  }
-
   protected lazy val `sub-delims-predicate` = CharPredicate('!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=')
 
   protected def `sub-delims` = rule {
