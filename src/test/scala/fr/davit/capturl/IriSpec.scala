@@ -132,8 +132,8 @@ class IriSpec extends FlatSpec with Matchers {
 
   it should "accept empty fragment" in {
     Iri("path#", Lazy) shouldBe Iri("path#", Strict)
-    Iri("path#", Lazy) shouldBe Iri("path#", Strict)
     Iri("path?#", Lazy) shouldBe Iri("path?#", Strict)
+    Iri("path?query#", Lazy) shouldBe Iri("path?query#", Strict)
   }
 
 }
