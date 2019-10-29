@@ -1,14 +1,14 @@
 package fr.davit.capturl.parsers
 import fr.davit.capturl.scaladsl.Query
-import org.parboiled2.{CharPredicate, Parser, Rule0, Rule1}
+import org.parboiled2.{CharPredicate, Rule0, Rule1}
 
 object QueryParser {
-  def apply(path: String): Parser with QueryParser = {
+  def apply(path: String): StringParser with QueryParser = {
     new StringParser(path) with QueryParser
   }
 }
 
-trait QueryParser extends RichStringBuilding { this: Parser =>
+trait QueryParser extends RichStringBuilding { this: StringParser =>
 
   protected lazy val `part-sub-delims-predicate`: CharPredicate = {
     `sub-delims-predicate` -- CharPredicate('&', '+') ++ CharPredicate(':', '@', '/', '?')

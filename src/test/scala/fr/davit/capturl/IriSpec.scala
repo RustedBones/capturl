@@ -1,5 +1,6 @@
 package fr.davit.capturl
 
+import fr.davit.capturl.parsers.StringParser.ParseException
 import fr.davit.capturl.scaladsl.Authority.Port
 import fr.davit.capturl.scaladsl.Iri.ParsingMode.{Lazy, Strict}
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
@@ -121,7 +122,7 @@ class IriSpec extends FlatSpec with Matchers {
 
   "LazyIri" should "parse more than StrictIri parsers" in {
     val url = "http://user{info@example.com/"
-    a[ParseError] shouldBe thrownBy(Iri(url, Strict))
+    a[ParseException] shouldBe thrownBy(Iri(url, Strict))
     noException shouldBe thrownBy(Iri(url, Lazy))
   }
 

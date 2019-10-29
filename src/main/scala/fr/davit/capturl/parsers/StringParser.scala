@@ -1,5 +1,22 @@
 package fr.davit.capturl.parsers
 
-import org.parboiled2.{Parser, ParserInput}
+import fr.davit.capturl.parsers.StringParser.ParseException
+import org.parboiled2.Parser.DeliveryScheme
+import org.parboiled2.{ParseError, Parser, ParserInput, Rule1}
 
-class StringParser(override val input: ParserInput) extends Parser
+import scala.util.{Failure, Try}
+
+object StringParser {
+  class ParseException(input: ParserInput, error: ParseError) extends RuntimeException(error.format(input))
+}
+
+class StringParser(override val input: ParserInput) extends Parser {
+
+  def phrase[T](r: this.type => Rule1[T], name: String): Try[T] = {
+    __run(rule(r(this).named(name) ~ EOI))(DeliveryScheme.Try) match {
+      case Failure(e: ParseError) => Failure(new ParseException(input, e))
+      case result                 => result
+    }
+  }
+
+}

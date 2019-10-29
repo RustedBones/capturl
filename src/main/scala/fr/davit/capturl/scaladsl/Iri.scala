@@ -2,8 +2,6 @@ package fr.davit.capturl.scaladsl
 
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers._
-import org.parboiled2.Parser.DeliveryScheme
-import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.util.{Success, Try}
 
@@ -111,9 +109,13 @@ object Iri {
 
   val empty: Iri = StrictIri()
 
-  def apply(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Iri = parsingMode match {
-    case ParsingMode.Strict => IriParser(iri).IRI.run()
-    case ParsingMode.Lazy   => IriParser(iri).IRILazy.run()
+  def apply(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Iri = parse(iri, parsingMode).get
+
+  def parse(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Try[Iri] = {
+    parsingMode match {
+      case ParsingMode.Strict =>  IriParser(iri).phrase(_.IRI, "iri")
+      case ParsingMode.Lazy   =>  IriParser(iri).phrase(_.IRILazy, "iri")
+    }
   }
 }
 
@@ -214,27 +216,27 @@ final case class LazyIri(
   import Iri._
 
   private[capturl] lazy val schemeResult: Try[Scheme] = rawScheme match {
-    case Some(s) => SchemeParser(s).phrase(_.scheme)(DeliveryScheme.Try)
+    case Some(s) => Scheme.parse(s)
     case None    => Success(Scheme.empty)
   }
 
   private[capturl] lazy val authorityResult: Try[Authority] = rawAuthority match {
-    case Some(a) => AuthorityParser(a).phrase(_.iauthority)(DeliveryScheme.Try)
+    case Some(a) => Authority.parse(a)
     case None    => Success(Authority.empty)
   }
 
   private[capturl] lazy val pathResult: Try[Path] = rawPath match {
-    case Some(p) => PathParser(p).phrase(_.ipath)(DeliveryScheme.Try)
+    case Some(p) => Path.parse(p)
     case None    => Success(Path.empty)
   }
 
   private[capturl] lazy val queryResult: Try[Query] = rawQuery match {
-    case Some(q) => QueryParser(q).phrase(_.iquery)(DeliveryScheme.Try)
+    case Some(q) => Query.parse(q)
     case None    => Success(Query.empty)
   }
 
   private[capturl] lazy val fragmentResult: Try[Fragment] = rawFragment match {
-    case Some(f) => FragmentParser(f).phrase(_.ifragment)(DeliveryScheme.Try)
+    case Some(f) => Fragment.parse(f)
     case None    => Success(Fragment.empty)
   }
 
@@ -354,7 +356,7 @@ final case class LazyIri(
 
   override def toString: String = {
     val rawNormalizedPath = Iri.normalizeRawPath(rawScheme, rawAuthority, rawPath)
-    val b = new StringBuilder()
+    val b                 = new StringBuilder()
     rawScheme.foreach(s => b.append(s"${schemeResult.getOrElse(s)}:"))
     rawAuthority.foreach(a => b.append(s"//${normalizedAuthorityResult.getOrElse(a)}"))
     rawNormalizedPath.foreach(p => b.append(normalizedPathResult.getOrElse(p)))

@@ -10,7 +10,7 @@ class IriParserSpec extends FlatSpec with Matchers {
 
   trait Fixture extends ParserFixture[Iri] {
     override def createParser(input: ParserInput) = new TestParser[Iri](input) with IriParser {
-      override def rule = IRI
+      override def rule = rule(IRI ~ EOI)
     }
   }
 

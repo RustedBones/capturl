@@ -3,10 +3,10 @@ package fr.davit.capturl.scaladsl
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers.PathParser
 import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash, SlashOrEmpty}
-import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 sealed abstract class Path extends javadsl.Path {
 
@@ -55,7 +55,7 @@ sealed abstract class Path extends javadsl.Path {
 
   def / : Path = this ++ Slash(Path.Empty)
 
-  def /(segment: String): Path = this ++ Slash(PathParser(segment).phrase(_.isegment))
+  def /(segment: String): Path = this ++ Slash(Segment.parse(segment).get)
 
   def ?/(segment: String): Path = if (this.endsWithSlash) this + segment else this / segment
 
@@ -149,8 +149,20 @@ object Path {
   def / : Path      = slash
   def /(path: Path) = Slash(path)
 
+  def apply(path: String): Path = parse(path).get
+
+  def parse(path: String): Try[Path] = {
+    PathParser(path).phrase(_.ipath, "path")
+  }
+
   sealed trait SlashOrEmpty extends Path {
     def startsWithSegment = false
+  }
+
+  object Segment {
+    def parse(segment: String): Try[Segment] = {
+      PathParser(segment).phrase(_.isegment, "segment")
+    }
   }
 
   final case class Segment(override val head: String, override val tail: SlashOrEmpty = Empty) extends Path {
@@ -165,7 +177,7 @@ object Path {
       case x                  => x.isEmpty
     }
     override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(head :: prefix)
-    override def ::(segment: String): Path                         = PathParser(segment + head).phrase(_.isegment).copy(tail = tail)
+    override def ::(segment: String): Path                         = Segment.parse(segment).get.copy(tail = tail)
     override def ++(suffix: Path): Path                            = head :: (tail ++ suffix)
     override def segments: List[String]                            = head :: tail.segments
   }
@@ -179,7 +191,7 @@ object Path {
     override def startsWithSlash: Boolean                          = false
     override def startsWith(that: Path): Boolean                   = that.isEmpty
     override protected def reverseAndPrependTo(prefix: Path): Path = prefix
-    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment)
+    override def ::(segment: String): Path                         = Segment.parse(segment).get
     override def ++(suffix: Path): Path                            = suffix
     override def segments: List[String]                            = Nil
   }
@@ -192,12 +204,8 @@ object Path {
     override def startsWithSlash: Boolean                          = true
     override def startsWith(that: Path): Boolean                   = that.isEmpty || that.startsWithSlash && tail.startsWith(that.tail)
     override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(Slash(prefix))
-    override def ::(segment: String): Path                         = PathParser(segment).phrase(_.isegment).copy(tail = this)
+    override def ::(segment: String): Path                         = Segment.parse(segment).get.copy(tail = this)
     override def ++(suffix: Path): Path                            = Path./(tail ++ suffix)
     override def segments: List[String]                            = tail.segments
-  }
-
-  def apply(path: String): Path = {
-    PathParser(path).phrase(_.ipath).normalize()
   }
 }

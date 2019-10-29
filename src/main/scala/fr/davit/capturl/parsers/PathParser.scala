@@ -1,17 +1,17 @@
 package fr.davit.capturl.parsers
 import fr.davit.capturl.scaladsl.Path
-import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
+import fr.davit.capturl.scaladsl.Path.{Segment, Slash, SlashOrEmpty, Empty}
 import org.parboiled2._
 
 object PathParser {
 
-  def apply(path: String): Parser with PathParser = {
+  def apply(path: String): StringParser with PathParser = {
     new StringParser(path) with PathParser
   }
 }
 
 trait PathParser extends RichStringBuilding {
-  this: Parser =>
+  this: StringParser =>
 
   def isegment: Rule1[Segment] = rule {
     clearSB() ~ ipchar.* ~ push(Segment(sb.toString))
@@ -25,25 +25,30 @@ trait PathParser extends RichStringBuilding {
     clearSB() ~ (iunreserved | `pct-encoded` | `sub-delims` | '@' ~ appendSB()).+ ~ push(Segment(sb.toString))
   }
 
-  def `ipath-abempty`: Rule1[Path] = rule {
+  def `ipath-abempty`: Rule1[SlashOrEmpty] = rule {
     // construct in reverse for better performance
-    push(Path.empty) ~ ('/' ~ isegment ~> ((p: Path, s: Segment) => s ++ Slash(p))).* ~> ((p: Path) => p.reverse)
+    push(Empty) ~ ('/' ~ isegment ~> ((p: Path, s: Segment) => s.copy(tail = Slash(p)))).* ~> { (p: Path) =>
+      p.reverse match {
+        case abempty: SlashOrEmpty => abempty
+        case path => throw new Exception(s"Path '$path' is not abempty")
+      }
+    }
   }
 
-  def `ipath-absolute`: Rule1[Path] = rule {
-    '/' ~ push(Path.root) ~ (`isegment-nz` ~ `ipath-abempty` ~> ((r: Path, s: Segment, p: Path) => r ++ s ++ p)).?
+  def `ipath-absolute`: Rule1[Slash] = rule {
+    '/' ~ push(Slash()) ~ (`isegment-nz` ~ `ipath-abempty` ~> ((r: Slash, s: Segment, p: SlashOrEmpty) => r.copy(tail = s.copy(tail = p)))).?
   }
 
-  def `ipath-noscheme`: Rule1[Path] = rule {
-    `isegment-nz-nc ` ~ `ipath-abempty` ~> ((s: Segment, p: Path) => s ++ p)
+  def `ipath-noscheme`: Rule1[Segment] = rule {
+    `isegment-nz-nc ` ~ `ipath-abempty` ~> ((s: Segment, p: SlashOrEmpty) => s.copy(tail = p))
   }
 
-  def `ipath-rootless`: Rule1[Path] = rule {
-    `isegment-nz` ~ `ipath-abempty` ~> ((s: Segment, p: Path) => s ++ p)
+  def `ipath-rootless`: Rule1[Segment] = rule {
+    `isegment-nz` ~ `ipath-abempty` ~> ((s: Segment, p: SlashOrEmpty) => s.copy(tail = p))
   }
 
-  def `ipath-empty`: Rule1[Path] = rule {
-    clearSB() ~ &(!ipchar) ~ push(Path.empty)
+  def `ipath-empty`: Rule1[Empty.type] = rule {
+    clearSB() ~ &(!ipchar) ~ push(Empty)
   }
 
   def ipath: Rule1[Path] = rule {

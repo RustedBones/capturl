@@ -1,19 +1,19 @@
 package fr.davit.capturl.parsers
 import java.net.IDN
 
-import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
 import fr.davit.capturl.scaladsl.Host
+import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
 import org.parboiled2.CharPredicate._
-import org.parboiled2.{Parser, Rule1}
+import org.parboiled2.Rule1
 
 object HostParser {
-  def apply(host: String): Parser with HostParser = {
+  def apply(host: String): StringParser with HostParser = {
     new StringParser(host) with HostParser
   }
 }
 
 trait HostParser extends RichStringBuilding {
-  this: Parser =>
+  this: StringParser =>
 
   //--------------------------------------------------------------------------------------------------------------------
   // IPv4

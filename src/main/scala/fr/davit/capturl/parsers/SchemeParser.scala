@@ -2,17 +2,17 @@ package fr.davit.capturl.parsers
 import fr.davit.capturl.scaladsl.Scheme
 import fr.davit.capturl.scaladsl.Scheme.Protocol
 import org.parboiled2.CharPredicate._
-import org.parboiled2.{Parser, Rule1}
+import org.parboiled2.Rule1
 
 object SchemeParser {
   private val SchemeChars = AlphaNum ++ '+' ++ '-' ++ '.'
 
-  def apply(scheme: String): Parser with SchemeParser = {
+  def apply(scheme: String): StringParser with SchemeParser = {
     new StringParser(scheme) with SchemeParser
   }
 }
 
-trait SchemeParser extends RichStringBuilding { this: Parser =>
+trait SchemeParser extends RichStringBuilding { this: StringParser =>
 
   import SchemeParser._
 

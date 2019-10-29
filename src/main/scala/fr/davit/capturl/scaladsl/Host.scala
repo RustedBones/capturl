@@ -4,9 +4,9 @@ import java.net.{Inet4Address, Inet6Address}
 
 import fr.davit.capturl.parsers.HostParser
 import fr.davit.capturl.scaladsl.OptionalPart.{DefinedPart, EmptyPart}
-import org.parboiled2.Parser.DeliveryScheme.Throw
 
 import scala.collection.immutable
+import scala.util.Try
 
 sealed abstract class Host extends fr.davit.capturl.javadsl.Host with OptionalPart[String] {
 
@@ -26,8 +26,10 @@ object Host {
 
   val empty: Host = Empty
 
-  def apply(address: String): Host = {
-    HostParser(address).phrase(_.ihost)
+  def apply(address: String): Host = parse(address).get
+
+  def parse(address: String): Try[Host] = {
+    HostParser(address).phrase(_.ihost, "host")
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -35,8 +37,10 @@ object Host {
   //--------------------------------------------------------------------------------------------------------------------
   object IPv4Host {
 
-    def apply(ip: String): IPv4Host = {
-      HostParser(ip).phrase(_.IPv4address)
+    def apply(ip: String): IPv4Host = parse(ip).get
+
+    def parse(ip: String): Try[IPv4Host] = {
+      HostParser(ip).phrase(_.IPv4address, "ipv4")
     }
 
     def apply(byte1: Byte, byte2: Byte, byte3: Byte, byte4: Byte): IPv4Host = {
@@ -61,8 +65,10 @@ object Host {
   //--------------------------------------------------------------------------------------------------------------------
   object IPv6Host {
 
-    def apply(ip: String): IPv6Host = {
-      HostParser(ip).phrase(_.IPv6address)
+    def apply(ip: String): IPv6Host = parse(ip).get
+
+    def parse(ip: String): Try[IPv6Host] = {
+      HostParser(ip).phrase(_.IPv6address, "ipv6")
     }
 
     def apply(inetAddress: Inet6Address): IPv6Host = apply(inetAddress.getAddress)

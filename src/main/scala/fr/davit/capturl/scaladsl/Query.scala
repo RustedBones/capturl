@@ -1,13 +1,13 @@
 package fr.davit.capturl.scaladsl
 
-import fr.davit.capturl.parsers.QueryParser
-import org.parboiled2.Parser.DeliveryScheme.Throw
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.javadsl.QueryParameter
+import fr.davit.capturl.parsers.QueryParser
 
-import scala.collection.immutable.LinearSeq
-import scala.collection.{mutable, LinearSeqOptimized}
 import scala.collection.JavaConverters._
+import scala.collection.immutable.LinearSeq
+import scala.collection.{LinearSeqOptimized, mutable}
+import scala.util.Try
 
 sealed abstract class Query
     extends javadsl.Query
@@ -35,8 +35,10 @@ object Query {
 
   val empty: Query = Empty
 
-  def apply(query: String): Query = {
-    QueryParser(query).phrase(_.iquery)
+  def apply(query: String): Query = parse(query).get
+
+  def parse(query: String): Try[Query] = {
+    QueryParser(query).phrase(_.iquery, "query")
   }
 
   def apply(query: Seq[(String, Option[String])]): Query = {
