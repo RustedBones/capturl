@@ -6,10 +6,6 @@ import shapeless._
 
 trait RichStringBuilding extends StringBuilding { this: Parser =>
 
-  def phrase[T](r: this.type  => Rule1[T])(implicit scheme: Parser.DeliveryScheme[T :: HNil]): scheme.Result = {
-    __run(rule(r(this) ~ EOI))
-  }
-
   protected lazy val `sub-delims-predicate` = CharPredicate('!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=')
 
   protected def `sub-delims` = rule {
@@ -43,9 +39,9 @@ trait RichStringBuilding extends StringBuilding { this: Parser =>
   }
 
   protected def `pct-encoded`: Rule0 = rule {
-    '%' ~ capture(HexDigit ~ HexDigit) ~> { hex: String =>
-      val decoded = (java.lang.Short.valueOf(hex, 16): Short).toChar
-      appendSB(decoded)
+    ('%' ~ capture(HexDigit ~ HexDigit)).+ ~> { hexes: Seq[String] =>
+      val bytes = hexes.map(hex => Integer.parseInt(hex, 16).toByte)
+      appendSB(new String(bytes.toArray))
     }
   }
 

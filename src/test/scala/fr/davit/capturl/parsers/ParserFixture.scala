@@ -7,7 +7,7 @@ object ParserFixture {
 
   val DebugFormatter = new ErrorFormatter(showTraces = true)
 
-  abstract class TestParser[T](override val input: ParserInput) extends Parser with StringBuilding {
+  abstract class TestParser[T](input: ParserInput) extends StringParser(input) with StringBuilding {
     def rule: Rule1[T]
   }
 

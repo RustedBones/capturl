@@ -3,18 +3,18 @@ package fr.davit.capturl.parsers
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl.{Authority, Host}
 import org.parboiled2.CharPredicate._
-import org.parboiled2.{Parser, Rule1}
+import org.parboiled2.Rule1
 
 import scala.util.{Success, Try}
 
 object AuthorityParser {
 
-  def apply(userInfo: String): Parser with AuthorityParser = {
+  def apply(userInfo: String): StringParser with AuthorityParser = {
     new StringParser(userInfo) with AuthorityParser
   }
 }
 
-trait AuthorityParser extends HostParser { this: Parser =>
+trait AuthorityParser extends HostParser { this: StringParser =>
 
   def port: Rule1[Port] = rule {
     capture(Digit.+) ~> { s: String =>

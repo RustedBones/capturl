@@ -116,5 +116,4 @@ class IriSpec extends FlatSpec with Matchers {
     }
 
   }
-
 }

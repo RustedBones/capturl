@@ -1,11 +1,11 @@
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.scaladsl._
-import org.parboiled2.{CharPredicate, Parser, Rule1, Rule2, RuleN}
+import org.parboiled2.{CharPredicate, Rule1, Rule2, RuleN}
 import shapeless.{Path => _, _}
 
 object IriParser {
-  def apply(iri: String): Parser with IriParser = {
+  def apply(iri: String): StringParser with IriParser = {
     new StringParser(iri) with IriParser
   }
 }
@@ -15,7 +15,7 @@ trait IriParser
     with AuthorityParser
     with PathParser
     with QueryParser
-    with FragmentParser { this: Parser =>
+    with FragmentParser { this: StringParser =>
 
   def `ihier-part`: Rule2[Authority, Path] = rule {
     ("//" ~ iauthority ~ atomic(`ipath-abempty`).named("absolute or empty path")) |
@@ -38,7 +38,7 @@ trait IriParser
   }
 
   def IRI: Rule1[StrictIri] = rule {
-    ((`iabsolute-part` | `irelative-part`) ~ atomic("?" ~ iquery).?.named("query") ~ atomic("#" ~ ifragment).?.named("fragment") ~ EOI) ~> {
+    ((`iabsolute-part` | `irelative-part`) ~ atomic("?" ~ iquery).?.named("query") ~ atomic("#" ~ ifragment).?.named("fragment")) ~> {
       (scheme: Scheme, authority: Authority, path: Path, query: Option[Query], fragment: Option[Fragment]) =>
         StrictIri(scheme, authority, path, query.getOrElse(Query.empty), fragment.getOrElse(Fragment.empty))
     }
@@ -68,7 +68,7 @@ trait IriParser
   }
 
   def IRILazy: Rule1[LazyIri] = rule {
-    (rawScheme ~ rawAuthority ~ rawPath ~ rawQuery ~ rawFragment ~ EOI) ~> {
+    (rawScheme ~ rawAuthority ~ rawPath ~ rawQuery ~ rawFragment) ~> {
       (scheme: Option[String], authority: Option[String], path: Option[String], query: Option[String], fragment: Option[String]) =>
         LazyIri(scheme, authority, path, query, fragment)
     }
