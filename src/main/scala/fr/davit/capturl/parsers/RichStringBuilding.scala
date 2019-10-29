@@ -43,9 +43,9 @@ trait RichStringBuilding extends StringBuilding { this: Parser =>
   }
 
   protected def `pct-encoded`: Rule0 = rule {
-    '%' ~ capture(HexDigit ~ HexDigit) ~> { hex: String =>
-      val decoded = (java.lang.Short.valueOf(hex, 16): Short).toChar
-      appendSB(decoded)
+    ('%' ~ capture(HexDigit ~ HexDigit)).+ ~> { hexes: Seq[String] =>
+      val bytes = hexes.map(hex => Integer.parseInt(hex, 16).toByte)
+      appendSB(new String(bytes.toArray))
     }
   }
 
