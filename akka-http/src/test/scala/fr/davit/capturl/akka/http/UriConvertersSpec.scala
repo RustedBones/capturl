@@ -196,8 +196,8 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       // path containing double slashes
-      val uri = Uri("https://example.com/client/https://test.co.uk/wp/home.jpeg")
-      val iri = Iri("https://example.com/client/https://test.co.uk/wp/home.jpeg")
+      val uri = Uri("https://example.com/dir//file.jpeg")
+      val iri = Iri("https://example.com/dir//file.jpeg")
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri
     }
