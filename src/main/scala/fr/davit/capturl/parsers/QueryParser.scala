@@ -28,12 +28,14 @@ trait QueryParser extends RichStringBuilding { this: StringParser =>
     iunreserved | `pct-encoded` | spaces | `part-sub-delims`
   }
 
-  def part: Rule1[String] = rule {
-    clearSB() ~ `part-char`.* ~ push(sb.toString)
+  def `query-part`: Rule1[String] = rule {
+    atomic {
+      clearSB() ~ `part-char`.* ~ push(sb.toString)
+    }
   }
 
   def iquery: Rule1[Query] = rule {
-    part.*.separatedBy('&') ~> { parts: Seq[String] =>
+    `query-part`.*.separatedBy('&') ~> { parts: Seq[String] =>
       val b = Query.newBuilder
       parts.foreach { p =>
         val keyValue = p.split("=")

@@ -152,7 +152,7 @@ object Path {
   def apply(path: String): Path = parse(path).get
 
   def parse(path: String): Try[Path] = {
-    PathParser(path).phrase(_.ipath, "path")
+    PathParser(path).phrase(_.ipath)
   }
 
   sealed trait SlashOrEmpty extends Path {
@@ -161,7 +161,7 @@ object Path {
 
   object Segment {
     def parse(segment: String): Try[Segment] = {
-      PathParser(segment).phrase(_.isegment, "segment")
+      PathParser(segment).phrase(_.isegment)
     }
   }
 

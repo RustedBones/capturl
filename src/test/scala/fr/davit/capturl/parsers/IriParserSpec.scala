@@ -82,13 +82,13 @@ class IriParserSpec extends FlatSpec with Matchers {
   }
 
   it should "reject invalid IRIs" in new Fixture {
-    parseError("http://user{info@example.com/") shouldBe """Invalid input "{i", expected ~, host, port, absolute or empty path, query, fragment or 'EOI' (line 1, column 12):
+    parseError("http://user{info@example.com/") shouldBe """Invalid input "user{i", expected iauthority, ipath-abempty, '?', '#' or 'EOI' (line 1, column 8):
                                                            |http://user{info@example.com/
-                                                           |           ^""".stripMargin
+                                                           |       ^""".stripMargin
 
-    parseError("http://example.com:-1/") shouldBe """Invalid input ":-1/", expected ~, host, port, absolute or empty path, query, fragment or 'EOI' (line 1, column 19):
+    parseError("http://example.com:-1/") shouldBe """Invalid input "-1/", expected iuserinfo, '@', ireg-name or port (line 1, column 20):
                                                     |http://example.com:-1/
-                                                    |                  ^""".stripMargin
+                                                    |                   ^""".stripMargin
 //    TODO fail on strict
 //    parseError("http://example.com/path with space") shouldBe """Invalid input " w", expected absolute or empty path, query, fragment or 'EOI' (line 1, column 24):
 //                                                                |http://example.com/path with space

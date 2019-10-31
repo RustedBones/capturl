@@ -35,7 +35,7 @@ object Scheme {
     if (scheme.isEmpty) {
       Success(Scheme.Empty)
     } else {
-      SchemeParser(scheme).phrase(_.scheme, "scheme")
+      SchemeParser(scheme).phrase(_.scheme)
     }
   }
 

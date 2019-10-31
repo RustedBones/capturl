@@ -17,7 +17,7 @@ object Fragment {
     if (fragment.isEmpty) {
       Success(Fragment.Empty)
     } else {
-      FragmentParser(fragment).phrase(_.ifragment, "fragment")
+      FragmentParser(fragment).phrase(_.ifragment)
     }
   }
 

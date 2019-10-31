@@ -46,7 +46,7 @@ object Authority {
   def apply(authority: String): Authority = parse(authority).get
 
   def parse(authority: String): Try[Authority] = {
-    AuthorityParser(authority).phrase(_.iauthority, "authority")
+    AuthorityParser(authority).phrase(_.iauthority)
   }
 
   trait Port extends OptionalPart[Int]
@@ -78,7 +78,7 @@ object Authority {
       if (userInfo.isEmpty) {
         Success(UserInfo.Empty)
       } else {
-        AuthorityParser(userInfo).phrase(_.iuserinfo, "userinfo")
+        AuthorityParser(userInfo).phrase(_.iuserinfo)
       }
     }
 

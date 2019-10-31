@@ -38,7 +38,7 @@ object Query {
   def apply(query: String): Query = parse(query).get
 
   def parse(query: String): Try[Query] = {
-    QueryParser(query).phrase(_.iquery, "query")
+    QueryParser(query).phrase(_.iquery)
   }
 
   def apply(query: Seq[(String, Option[String])]): Query = {

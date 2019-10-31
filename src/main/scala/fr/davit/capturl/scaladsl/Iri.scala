@@ -113,8 +113,8 @@ object Iri {
 
   def parse(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Try[Iri] = {
     parsingMode match {
-      case ParsingMode.Strict =>  IriParser(iri).phrase(_.IRI, "iri")
-      case ParsingMode.Lazy   =>  IriParser(iri).phrase(_.IRILazy, "iri")
+      case ParsingMode.Strict =>  IriParser(iri).phrase(_.IRI)
+      case ParsingMode.Lazy   =>  IriParser(iri).phrase(_.IRILazy)
     }
   }
 }
