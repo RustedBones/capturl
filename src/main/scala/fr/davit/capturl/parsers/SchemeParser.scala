@@ -17,8 +17,9 @@ trait SchemeParser extends RichStringBuilding { this: StringParser =>
   import SchemeParser._
 
   def scheme: Rule1[Scheme] = rule {
-    clearSB() ~
-      Alpha ~ appendLowered() ~ (SchemeChars ~ appendLowered()).* ~
-      push(Protocol(sb.toString))
+    atomic {
+      clearSB() ~ Alpha ~ appendLowered() ~ (SchemeChars ~ appendLowered()).* ~
+        push(Protocol(sb.toString))
+    }
   }
 }

@@ -17,23 +17,26 @@ object AuthorityParser {
 trait AuthorityParser extends HostParser { this: StringParser =>
 
   def port: Rule1[Port] = rule {
-    capture(Digit.+) ~> { s: String =>
-      Try(s.toInt) match {
-        case Success(value) if value < Port.MaxPortNumber => push(Port.Number(value))
-        case _                                            => failX("port")
+    atomic {
+      capture(Digit.+) ~> { s: String =>
+        Try(s.toInt) match {
+          case Success(value) if value < Port.MaxPortNumber => push(Port.Number(value))
+          case _                                            => failX("port")
+        }
       }
     }
   }
 
   def iuserinfo: Rule1[UserInfo] = rule {
-    clearSB() ~
-      (iunreserved | `pct-encoded` | `sub-delims` | ':' ~ appendSB()).* ~
-      push(UserInfo.Credentials(sb.toString))
+    atomic {
+      clearSB() ~ (iunreserved | `pct-encoded` | `sub-delims` | ':' ~ appendSB()).* ~
+        push(UserInfo.Credentials(sb.toString))
+    }
   }
 
   def iauthority: Rule1[Authority] = rule {
-    (atomic(iuserinfo ~ '@').?.named("userinfo") ~ atomic(ihost).named("host") ~ atomic(':' ~ port).?.named("port")) ~> {
+    ((iuserinfo ~ '@').? ~ ihost ~ (':' ~ port).? ~> {
       (u: Option[UserInfo], h: Host, p: Option[Port]) => Authority(h, p.getOrElse(Port.empty), u.getOrElse(UserInfo.empty))
-    }
+    })
   }
 }

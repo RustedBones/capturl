@@ -7,6 +7,7 @@ import org.parboiled2.CharPredicate._
 import org.parboiled2.Rule1
 
 object HostParser {
+
   def apply(host: String): StringParser with HostParser = {
     new StringParser(host) with HostParser
   }
@@ -28,7 +29,9 @@ trait HostParser extends RichStringBuilding {
   }
 
   def IPv4address: Rule1[IPv4Host] = rule {
-    4.times(`dec-octet`).separatedBy('.') ~> ((bs: Seq[Byte]) => IPv4Host(bs.toList))
+    atomic {
+      4.times(`dec-octet`).separatedBy('.') ~> ((bs: Seq[Byte]) => IPv4Host(bs.toList))
+    }
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -46,7 +49,8 @@ trait HostParser extends RichStringBuilding {
   }
 
   def ls32: Rule1[Seq[Byte]] = rule {
-    2.times(h16).separatedBy(':') ~> ((bs: Seq[Seq[Byte]]) => bs.flatten) | IPv4address ~> ((ipv4: IPv4Host) => ipv4.bytes)
+    2.times(h16).separatedBy(':') ~> ((bs: Seq[Seq[Byte]]) => bs.flatten) | IPv4address ~> ((ipv4: IPv4Host) =>
+      ipv4.bytes)
   }
 
   def hextets(max: Int): Rule1[Seq[Byte]] = {
@@ -55,8 +59,8 @@ trait HostParser extends RichStringBuilding {
   }
 
   def IPv6address: Rule1[IPv6Host] = {
-    def onePart: Rule1[Seq[Byte]] = rule{
-      8.times(h16).separatedBy(':')  ~> ((bs: Seq[Seq[Byte]]) => bs.flatten)
+    def onePart: Rule1[Seq[Byte]] = rule {
+      8.times(h16).separatedBy(':') ~> ((bs: Seq[Seq[Byte]]) => bs.flatten)
     }
 
     def highPart: Rule1[Seq[Byte]] = rule {
@@ -78,7 +82,11 @@ trait HostParser extends RichStringBuilding {
       }
     }
 
-    rule((onePart | splitted) ~> ((bs: Seq[Byte]) => IPv6Host(bs.toList)))
+    rule {
+      atomic {
+        (onePart | splitted) ~> ((bs: Seq[Byte]) => IPv6Host(bs.toList))
+      }
+    }
   }
 
   def `IP-literal`: Rule1[IPv6Host] = rule {
@@ -86,9 +94,10 @@ trait HostParser extends RichStringBuilding {
   }
 
   def `ireg-name`: Rule1[NamedHost] = rule {
-    clearSB() ~
-      (iunreserved | `pct-encoded` | `sub-delims`).* ~
-      push(NamedHost(IDN.toUnicode(sb.toString.toLowerCase)))
+    atomic {
+      clearSB() ~ (iunreserved | `pct-encoded` | `sub-delims`).* ~
+        push(NamedHost(IDN.toUnicode(sb.toString.toLowerCase)))
+    }
   }
 
   def ihost: Rule1[Host] = rule {

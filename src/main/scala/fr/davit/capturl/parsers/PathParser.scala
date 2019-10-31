@@ -1,6 +1,6 @@
 package fr.davit.capturl.parsers
 import fr.davit.capturl.scaladsl.Path
-import fr.davit.capturl.scaladsl.Path.{Segment, Slash, SlashOrEmpty, Empty}
+import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash, SlashOrEmpty}
 import org.parboiled2._
 
 object PathParser {
@@ -14,15 +14,21 @@ trait PathParser extends RichStringBuilding {
   this: StringParser =>
 
   def isegment: Rule1[Segment] = rule {
-    clearSB() ~ ipchar.* ~ push(Segment(sb.toString))
+    atomic {
+      clearSB() ~ ipchar.* ~ push(Segment(sb.toString))
+    }
   }
 
   def `isegment-nz`: Rule1[Segment] = rule {
-    clearSB() ~ ipchar.+ ~ push(Segment(sb.toString))
+    atomic {
+      clearSB() ~ ipchar.+ ~ push(Segment(sb.toString))
+    }
   }
 
   def `isegment-nz-nc ` : Rule1[Segment] = rule {
-    clearSB() ~ (iunreserved | `pct-encoded` | `sub-delims` | '@' ~ appendSB()).+ ~ push(Segment(sb.toString))
+    atomic {
+      clearSB() ~ (iunreserved | `pct-encoded` | `sub-delims` | '@' ~ appendSB()).+ ~ push(Segment(sb.toString))
+    }
   }
 
   def `ipath-abempty`: Rule1[SlashOrEmpty] = rule {
@@ -30,7 +36,7 @@ trait PathParser extends RichStringBuilding {
     push(Empty) ~ ('/' ~ isegment ~> ((p: Path, s: Segment) => s.copy(tail = Slash(p)))).* ~> { (p: Path) =>
       p.reverse match {
         case abempty: SlashOrEmpty => abempty
-        case path => throw new Exception(s"Path '$path' is not abempty")
+        case path                  => throw new Exception(s"Path '$path' is not abempty")
       }
     }
   }

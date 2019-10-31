@@ -13,7 +13,9 @@ object FragmentParser {
 trait FragmentParser extends RichStringBuilding { this: StringParser =>
 
   def ifragment: Rule1[Fragment] = rule {
-    clearSB() ~ (ipchar | CharPredicate('/', '?') ~ appendSB()).* ~ push(Identifier(sb.toString))
+    atomic {
+      clearSB() ~ (ipchar | CharPredicate('/', '?') ~ appendSB()).* ~ push(Identifier(sb.toString))
+    }
   }
 
 }

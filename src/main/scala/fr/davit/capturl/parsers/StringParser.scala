@@ -12,8 +12,8 @@ object StringParser {
 
 class StringParser(override val input: ParserInput) extends Parser {
 
-  def phrase[T](r: this.type => Rule1[T], name: String): Try[T] = {
-    __run(rule(r(this).named(name) ~ EOI))(DeliveryScheme.Try) match {
+  def phrase[T](r: this.type => Rule1[T]): Try[T] = {
+    __run(rule(r(this) ~ EOI))(DeliveryScheme.Try) match {
       case Failure(e: ParseError) => Failure(new ParseException(input, e))
       case result                 => result
     }
