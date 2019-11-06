@@ -76,8 +76,8 @@ trait UriConverters {
     @tailrec def akkaPathBuilder(p: Path, akkaPath: Uri.Path.SlashOrEmpty): Uri.Path = p match {
       case Empty                         => akkaPath
       case Slash(tail)                   => akkaPathBuilder(tail, Uri.Path.Slash(akkaPath))
+      case Segment("", tail)             => akkaPathBuilder(tail, akkaPath)
       case Segment(segment, Empty)       => Uri.Path.Segment(segment, akkaPath)
-      case Segment("", Slash(tail))      => akkaPathBuilder(tail, Uri.Path.Slash(akkaPath))
       case Segment(segment, Slash(tail)) => akkaPathBuilder(tail, Uri.Path.Slash(Uri.Path.Segment(segment, akkaPath)))
     }
     akkaPathBuilder(path.reverse, Uri.Path.Empty)

@@ -100,6 +100,7 @@ sealed abstract class Path extends javadsl.Path {
 
     @tailrec def process(input: Path, output: SlashOrEmpty = Empty): Path = input match {
       case Slash(tail)        => process(tail, Slash(output))
+      case Segment("", tail)  => process(tail, output)
       case Segment(".", tail) => process(collapseSlash(tail), output)
       case Segment("..", tail) =>
         val parent = output match {
@@ -110,11 +111,9 @@ sealed abstract class Path extends javadsl.Path {
           case Slash(_)                    => output
         }
         process(collapseSlash(tail), parent)
-      case Segment("", Empty)                  => output.reverse // trailing empty segment
-      case Segment("", tail) if output.isEmpty => process(tail, output) // starting empty segment
-      case Segment(string, Slash(tail))        => process(tail, Slash(Segment(string, output)))
-      case Segment(string, Empty)              => Segment(string, output).reverse
-      case Empty                               => output.reverse
+      case Segment(string, Slash(tail)) => process(tail, Slash(Segment(string, output)))
+      case Segment(string, Empty)       => Segment(string, output).reverse
+      case Empty                        => output.reverse
     }
 
     if (isAbsolute) process(tail, Slash()) else process(this)
@@ -160,6 +159,7 @@ object Path {
   }
 
   object Segment {
+
     def parse(segment: String): Try[Segment] = {
       PathParser(segment).phrase(_.isegment)
     }

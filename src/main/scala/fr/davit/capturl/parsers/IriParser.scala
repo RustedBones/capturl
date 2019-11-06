@@ -35,7 +35,7 @@ trait IriParser
   def IRI: Rule1[StrictIri] = rule {
     ((`iabsolute-part` | `irelative-part`) ~ ("?" ~ iquery).? ~ ("#" ~ ifragment).?) ~> {
       (scheme: Scheme, authority: Authority, path: Path, query: Option[Query], fragment: Option[Fragment]) =>
-        StrictIri(scheme, authority, path, query.getOrElse(Query.empty), fragment.getOrElse(Fragment.empty))
+        StrictIri(scheme, authority, path.normalize(), query.getOrElse(Query.empty), fragment.getOrElse(Fragment.empty))
     }
   }
 
