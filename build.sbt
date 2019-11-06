@@ -4,7 +4,7 @@ val repo     = "capturl"
 
 lazy val commonSettings = Seq(
   organization := "fr.davit",
-  version := "0.2.3",
+  version := "0.2.4-SNAPSHOT",
   crossScalaVersions := Seq("2.11.12", "2.12.10"), //, "2.13.0"),
   scalaVersion := crossScalaVersions.value.last,
   Compile / compile / scalacOptions ++= Settings.scalacOptions(scalaVersion.value),
