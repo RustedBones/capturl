@@ -127,6 +127,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
       (akkaPath: Path) shouldBe path
       (path: Uri.Path) shouldBe akkaPath
     }
+
+    {
+      // non normalized double slash
+      val akkaPath = Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty))))
+      val path = Segment("directory", Slash(Segment("", Slash(Segment("file.html")))))
+      (akkaPath: Path) shouldBe path.normalize()
+      (path: Uri.Path) shouldBe akkaPath
+    }
   }
 
   it should "convert query" in {
@@ -190,14 +198,6 @@ class UriConvertersSpec extends FlatSpec with Matchers {
       // lazy iri (broken query)
       val uri = Uri("http://example.com/?wrong%encoding")
       val iri = Iri("http://example.com/?wrong%encoding", Iri.ParsingMode.Lazy)
-      (uri: Iri) shouldBe iri
-      (iri: Uri) shouldBe uri
-    }
-
-    {
-      // path containing double slashes
-      val uri = Uri("https://example.com/dir//file.jpeg")
-      val iri = Iri("https://example.com/dir//file.jpeg")
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri
     }
