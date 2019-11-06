@@ -153,6 +153,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
       (query: Uri.Query) shouldBe akkaQuery
       (query: Option[String]) shouldBe Some("key=value")
     }
+
+    {
+      val akkaQuery = Uri.Query.Cons("receipt", "café de paris", Uri.Query.Empty)
+      val query = Query.Part("receipt", Some("café de paris"))
+      (akkaQuery: Query) shouldBe query
+      (query: Uri.Query) shouldBe akkaQuery
+      (query: Option[String]) shouldBe Some("receipt=café de paris")
+    }
   }
 
   it should "convert fragment" in {
@@ -181,17 +189,21 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       val uri = Uri("http://example.com/directory/file.html?key=value#identifier")
-      val iri = Iri("http://example.com/directory/file.html?key=value#identifier")
+      val iri = Iri("http://example.com/directory/file.html?key=value#identifier", Iri.ParsingMode.Strict)
+      val lazyUri = Iri("http://example.com/directory/file.html?key=value#identifier", Iri.ParsingMode.Lazy)
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri
+      (lazyUri: Uri) shouldBe uri
     }
 
     {
       // unicode iri
       val uri = Uri("http://xn--d1abbgf6aiiy.xn--p1ai/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B")
-      val iri = Iri("http://президент.рф/документы")
+      val iri = Iri("http://президент.рф/документы", Iri.ParsingMode.Strict)
+      val lazyUri = Iri("http://президент.рф/документы", Iri.ParsingMode.Lazy)
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri
+      (lazyUri: Uri) shouldBe uri
     }
 
     {
