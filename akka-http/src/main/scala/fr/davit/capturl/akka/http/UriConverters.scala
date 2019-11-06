@@ -136,8 +136,8 @@ trait UriConverters {
       } yield {
         // query and fragment are 'lazyly' parsed in akka Uri
         // in case of non RFC compliant, create the Uri with the raw string
-        val q = rq.map(lazyIri.queryResult.toOption.map(_.toString).getOrElse)
-        val f = rf.map(lazyIri.fragmentResult.toOption.map(_.toString).getOrElse)
+        val q = rq.map(lazyIri.queryResult.toOption.map(_.toString).getOrElse(_))
+        val f = rf.map(lazyIri.fragmentResult.toOption.map(_.toString).getOrElse(_))
         Uri(s, a, p, q, f)
       }
       uriResult.get
