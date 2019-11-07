@@ -147,6 +147,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
     }
 
     {
+      val akkaQuery = Uri.Query.Cons("key", Uri.Query.EmptyValue, Uri.Query.Empty)
+      val query = Query.Part("key")
+      (akkaQuery: Query) shouldBe query
+      (query: Uri.Query) shouldBe akkaQuery
+      (query: Option[String]) shouldBe Some("key")
+    }
+
+    {
       val akkaQuery = Uri.Query.Cons("key", "value", Uri.Query.Empty)
       val query = Query.Part("key", Some("value"))
       (akkaQuery: Query) shouldBe query
@@ -159,7 +167,7 @@ class UriConvertersSpec extends FlatSpec with Matchers {
       val query = Query.Part("receipt", Some("café de paris"))
       (akkaQuery: Query) shouldBe query
       (query: Uri.Query) shouldBe akkaQuery
-      (query: Option[String]) shouldBe Some("receipt=café de paris")
+      (query: Option[String]) shouldBe Some("receipt=caf%C3%A9+de+paris")
     }
   }
 
@@ -198,9 +206,13 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       // unicode iri
-      val uri = Uri("http://xn--d1abbgf6aiiy.xn--p1ai/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B")
-      val iri = Iri("http://президент.рф/документы", Iri.ParsingMode.Strict)
-      val lazyUri = Iri("http://президент.рф/документы", Iri.ParsingMode.Lazy)
+      val uri = Uri("http://xn--d1abbgf6aiiy.xn--p1ai" +
+        "/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B" +
+        "?%D1%84%D0%B8%D0%BB%D1%8C%D1%82%D1%80" +
+        "#%D0%B7%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%B8%D0%B5"
+      )
+      val iri = Iri("http://президент.рф/документы?фильтр#заглавие", Iri.ParsingMode.Strict)
+      val lazyUri = Iri("http://президент.рф/документы?фильтр#заглавие", Iri.ParsingMode.Lazy)
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri
       (lazyUri: Uri) shouldBe uri
