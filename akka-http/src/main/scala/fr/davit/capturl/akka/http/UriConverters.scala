@@ -91,13 +91,13 @@ trait UriConverters {
 
   implicit def toAkkaQuery[T <: Query](query: T): Uri.Query = {
     val b = Uri.Query.newBuilder
-    query.foreach { case (k, v) => b += k -> v.getOrElse("") }
+    query.foreach { case (k, v) => b += k -> v.getOrElse(Uri.Query.EmptyValue) }
     b.result()
   }
 
   implicit def toAkkaQueryString[T <: Query](query: T): Option[String] = query match {
     case Query.Empty => None
-    case _           => Some(query.toString)
+    case _           => Some(toAkkaQuery(query).toString) // force conversion to Uri.Query for the encoding
   }
 
   implicit def fromAkkaFragment(fragment: Option[String]): Fragment = fragment match {
@@ -136,8 +136,8 @@ trait UriConverters {
       } yield {
         // query and fragment are 'lazyly' parsed in akka Uri
         // in case of non RFC compliant, create the Uri with the raw string
-        val q = rq.map(lazyIri.queryResult.toOption.map(_.toString).getOrElse(_))
-        val f = rf.map(lazyIri.fragmentResult.toOption.map(_.toString).getOrElse(_))
+        val q = rq.map(lazyIri.queryResult.toOption.flatMap(toAkkaQueryString).getOrElse(_))
+        val f = rf.map(lazyIri.fragmentResult.toOption.flatMap(toAkkaFragment).getOrElse(_))
         Uri(s, a, p, q, f)
       }
       uriResult.get
