@@ -51,7 +51,18 @@ sealed abstract class Path extends javadsl.Path {
 
   def reverse: Path = reverseAndPrependTo(Path.Empty)
 
-  protected def reverseAndPrependTo(prefix: Path): Path
+  protected def reverseAndPrependTo(prefix: Path): Path = {
+    @tailrec def rec(path: Path, builder: Path): Path = path match {
+      case Empty       => builder
+      case Slash(tail) => rec(tail, Slash(builder))
+      case Segment(s, tail) =>
+        builder match {
+          case soe: SlashOrEmpty => rec(tail, Segment(s, soe))
+          case s: Segment        => throw new Exception(s"Segment $s can't be appended to another segment")
+        }
+    }
+    rec(this, prefix)
+  }
 
   def / : Path = this ++ Slash(Path.Empty)
 
@@ -176,36 +187,33 @@ object Path {
       case Segment(h, Empty)  => head.startsWith(h)
       case x                  => x.isEmpty
     }
-    override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(head :: prefix)
-    override def ::(segment: String): Path                         = Segment.parse(segment).get.copy(tail = tail)
-    override def ++(suffix: Path): Path                            = head :: (tail ++ suffix)
-    override def segments: List[String]                            = head :: tail.segments
+    override def ::(segment: String): Path = Segment.parse(segment).get.copy(tail = tail)
+    override def ++(suffix: Path): Path    = head :: (tail ++ suffix)
+    override def segments: List[String]    = head :: tail.segments
   }
 
   case object Empty extends SlashOrEmpty {
     override type Head = Nothing
-    override def head: Head                                        = throw new NoSuchElementException("head of empty path")
-    override def tail: Path                                        = throw new UnsupportedOperationException("tail of empty path")
-    override def isEmpty: Boolean                                  = true
-    override def length: Int                                       = 0
-    override def startsWithSlash: Boolean                          = false
-    override def startsWith(that: Path): Boolean                   = that.isEmpty
-    override protected def reverseAndPrependTo(prefix: Path): Path = prefix
-    override def ::(segment: String): Path                         = Segment.parse(segment).get
-    override def ++(suffix: Path): Path                            = suffix
-    override def segments: List[String]                            = Nil
+    override def head: Head                      = throw new NoSuchElementException("head of empty path")
+    override def tail: Path                      = throw new UnsupportedOperationException("tail of empty path")
+    override def isEmpty: Boolean                = true
+    override def length: Int                     = 0
+    override def startsWithSlash: Boolean        = false
+    override def startsWith(that: Path): Boolean = that.isEmpty
+    override def ::(segment: String): Path       = Segment.parse(segment).get
+    override def ++(suffix: Path): Path          = suffix
+    override def segments: List[String]          = Nil
   }
 
   final case class Slash(override val tail: Path = Empty) extends SlashOrEmpty {
     override type Head = Char
-    override def head: Head                                        = '/'
-    override def isEmpty: Boolean                                  = false
-    override def length: Int                                       = tail.length + 1
-    override def startsWithSlash: Boolean                          = true
-    override def startsWith(that: Path): Boolean                   = that.isEmpty || that.startsWithSlash && tail.startsWith(that.tail)
-    override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(Slash(prefix))
-    override def ::(segment: String): Path                         = Segment.parse(segment).get.copy(tail = this)
-    override def ++(suffix: Path): Path                            = Path./(tail ++ suffix)
-    override def segments: List[String]                            = tail.segments
+    override def head: Head                      = '/'
+    override def isEmpty: Boolean                = false
+    override def length: Int                     = tail.length + 1
+    override def startsWithSlash: Boolean        = true
+    override def startsWith(that: Path): Boolean = that.isEmpty || that.startsWithSlash && tail.startsWith(that.tail)
+    override def ::(segment: String): Path       = Segment.parse(segment).get.copy(tail = this)
+    override def ++(suffix: Path): Path          = Path./(tail ++ suffix)
+    override def segments: List[String]          = tail.segments
   }
 }
