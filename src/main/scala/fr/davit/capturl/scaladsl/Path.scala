@@ -176,10 +176,13 @@ object Path {
       case Segment(h, Empty)  => head.startsWith(h)
       case x                  => x.isEmpty
     }
-    override protected def reverseAndPrependTo(prefix: Path): Path = tail.reverseAndPrependTo(head :: prefix)
-    override def ::(segment: String): Path                         = Segment.parse(segment).get.copy(tail = tail)
-    override def ++(suffix: Path): Path                            = head :: (tail ++ suffix)
-    override def segments: List[String]                            = head :: tail.segments
+    override protected def reverseAndPrependTo(prefix: Path): Path = prefix match {
+      case soe: SlashOrEmpty => tail.reverseAndPrependTo(Segment(head, soe))
+      case s: Segment        => throw new Exception(s"Segment $s can't be appended to another segment")
+    }
+    override def ::(segment: String): Path = Segment.parse(segment).get.copy(tail = tail)
+    override def ++(suffix: Path): Path    = head :: (tail ++ suffix)
+    override def segments: List[String]    = head :: tail.segments
   }
 
   case object Empty extends SlashOrEmpty {
