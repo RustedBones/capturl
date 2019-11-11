@@ -3,7 +3,7 @@ package fr.davit.capturl.scaladsl
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.parsers._
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 sealed abstract class Iri private[capturl] extends javadsl.Iri {
   def scheme: Scheme
@@ -113,8 +113,8 @@ object Iri {
 
   def parse(iri: String, parsingMode: ParsingMode = ParsingMode.Strict): Try[Iri] = {
     parsingMode match {
-      case ParsingMode.Strict =>  IriParser(iri).phrase(_.IRI)
-      case ParsingMode.Lazy   =>  IriParser(iri).phrase(_.IRILazy)
+      case ParsingMode.Strict => IriParser(iri).phrase(_.IRI)
+      case ParsingMode.Lazy   => IriParser(iri).phrase(_.IRILazy)
     }
   }
 }
@@ -262,21 +262,29 @@ final case class LazyIri(
     }
   }
 
-  override def isValid: Boolean          = iriResult.isSuccess
-  override def toStrict: StrictIri       = iriResult.get
-  override def isSchemeValid: Boolean    = schemeResult.isSuccess
-  override def scheme: Scheme            = schemeResult.get
-  override def isAuthorityValid: Boolean = authorityResult.isSuccess
-  override def authority: Authority      = authorityResult.get
-  override def isPathValid: Boolean      = pathResult.isSuccess
-  override def path: Path                = pathResult.get
-  override def isQueryValid: Boolean     = queryResult.isSuccess
-  override def query: Query              = queryResult.get
-  override def isFragmentValid: Boolean  = fragmentResult.isSuccess
-  override def fragment: Fragment        = fragmentResult.get
+  @throws[Exception]
+  private def unsafe[T](result: Try[T]): T = {
+    result match {
+      case Success(value) => value
+      case Failure(e)     => throw new Exception(e) // throw a new exception here to know where the unsafe access was made
+    }
+  }
 
-  override private[capturl] lazy val normalizedAuthority: Authority = normalizedAuthorityResult.get
-  override private[capturl] lazy val normalizedPath: Path           = normalizedPathResult.get
+  override def isValid: Boolean          = iriResult.isSuccess
+  override def toStrict: StrictIri       = unsafe(iriResult)
+  override def isSchemeValid: Boolean    = schemeResult.isSuccess
+  override def scheme: Scheme            = unsafe(schemeResult)
+  override def isAuthorityValid: Boolean = authorityResult.isSuccess
+  override def authority: Authority      = unsafe(authorityResult)
+  override def isPathValid: Boolean      = pathResult.isSuccess
+  override def path: Path                = unsafe(pathResult)
+  override def isQueryValid: Boolean     = queryResult.isSuccess
+  override def query: Query              = unsafe(queryResult)
+  override def isFragmentValid: Boolean  = fragmentResult.isSuccess
+  override def fragment: Fragment        = unsafe(fragmentResult)
+
+  override private[capturl] lazy val normalizedAuthority: Authority = unsafe(normalizedAuthorityResult)
+  override private[capturl] lazy val normalizedPath: Path           = unsafe(normalizedPathResult)
 
   override def withScheme(scheme: Scheme): Iri = withScheme(scheme.toString)
   override def withScheme(scheme: String): Iri = copy(rawScheme = rawString(scheme))
