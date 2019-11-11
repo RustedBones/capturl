@@ -14,6 +14,7 @@ The implementation is strongly inspired by the great [`akka-http`](https://githu
 
 | Version | Release date | Scala versions                                     |
 | ------- | ------------ | -------------------------------------------------- |
+| `0.2.5` | 2019-11-11   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
 | `0.2.4` | 2019-11-08   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
 | `0.2.3` | 2019-11-06   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
 | `0.2.2` | 2019-10-31   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
