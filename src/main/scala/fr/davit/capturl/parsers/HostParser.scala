@@ -93,10 +93,13 @@ trait HostParser extends RichStringBuilding {
     '[' ~ IPv6address ~ ']' // TODO IPvFuture ?
   }
 
-  def `ireg-name`: Rule1[NamedHost] = rule {
+  def `ireg-name`: Rule1[Host] = rule {
     atomic {
       clearSB() ~ (iunreserved | `pct-encoded` | `sub-delims`).* ~
-        push(NamedHost(IDN.toUnicode(sb.toString.toLowerCase)))
+        push {
+          val hostname = sb.toString
+          if (hostname.isEmpty) Host.Empty else NamedHost(IDN.toUnicode(hostname).toLowerCase)
+        }
     }
   }
 

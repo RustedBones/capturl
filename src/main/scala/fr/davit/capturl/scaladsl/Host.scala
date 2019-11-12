@@ -53,7 +53,7 @@ object Host {
   }
 
   final case class IPv4Host(bytes: immutable.Seq[Byte]) extends Host with DefinedPart[String] {
-    require(bytes.length == 4, "bytes array must have length 4")
+    require(bytes.length == 4, "IPv4 bytes array must have length 4")
     override lazy val value: String = bytes.map(java.lang.Byte.toUnsignedInt).mkString(".")
 
     override def address: String = value
@@ -117,7 +117,7 @@ object Host {
   }
 
   final case class IPv6Host(bytes: immutable.Seq[Byte]) extends Host with DefinedPart[String] {
-    require(bytes.length == 16, "bytes array must have length 16")
+    require(bytes.length == 16, "IPv6 bytes array must have length 16")
 
     // normaized IPv6 representation: https://tools.ietf.org/html/rfc5952#section-4
     override lazy val value: String = IPv6Host.shorten(bytes.grouped(2).map(IPv6Host.hextet).toSeq).mkString(":")
@@ -131,6 +131,8 @@ object Host {
   // NamedHost
   //--------------------------------------------------------------------------------------------------------------------
   final case class NamedHost(value: String) extends Host with DefinedPart[String] {
+    require(value.nonEmpty, "NamedHost can't be empty")
+
     override def address: String      = value
     override def isNamedHost: Boolean = true
   }
