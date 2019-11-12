@@ -37,7 +37,7 @@ class HostParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse domains" in new Fixture {
-    parse("") shouldBe NamedHost("")                             -> ""
+    parse("") shouldBe Host.Empty                                -> ""
     parse("example.com:80") shouldBe NamedHost("example.com")    -> ":80"
     parse("bücher.example") shouldBe NamedHost("bücher.example") -> ""
 

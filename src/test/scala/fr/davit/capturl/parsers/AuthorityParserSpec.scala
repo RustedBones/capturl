@@ -3,7 +3,7 @@ package fr.davit.capturl.parsers
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl.Host.NamedHost
 import fr.davit.capturl.parsers.ParserFixture.TestParser
-import fr.davit.capturl.scaladsl.Authority
+import fr.davit.capturl.scaladsl.{Authority, Host}
 import fr.davit.capturl.scaladsl.Authority.Port.Number
 import fr.davit.capturl.scaladsl.Authority.UserInfo.Credentials
 import org.parboiled2.{ParseError, ParserInput}
@@ -53,8 +53,8 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse authority" in new AuthorityFixture {
-    parse("") shouldBe Authority(NamedHost("")) -> ""
-    parse("/path") shouldBe Authority(NamedHost("")) -> "/path"
+    parse("") shouldBe Authority.empty -> ""
+    parse("/path") shouldBe Authority.empty -> "/path"
     parse("example.com/path") shouldBe Authority(NamedHost("example.com")) -> "/path"
     parse("example.com:80/path") shouldBe Authority(NamedHost("example.com"), Number(80)) -> "/path"
     parse("user:password@example.com/path") shouldBe Authority(NamedHost("example.com"), userInfo = Credentials("user:password")) -> "/path"
