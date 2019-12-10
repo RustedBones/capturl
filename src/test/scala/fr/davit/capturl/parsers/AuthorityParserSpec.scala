@@ -33,6 +33,7 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
     parse("@host") shouldBe Credentials("") -> "@host"
     parse("userinfo@host") shouldBe Credentials("userinfo") -> "@host"
     parse("%75%73%65%72%69%6E%66%6F@host") shouldBe Credentials("userinfo") -> "@host"
+    parse("%C3%B6@host") shouldBe Credentials("ö") -> "@host"
   }
 
   it should "parse port" in new PortFixture {

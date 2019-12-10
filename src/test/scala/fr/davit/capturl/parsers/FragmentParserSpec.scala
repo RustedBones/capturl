@@ -16,6 +16,7 @@ class FragmentParserSpec extends FlatSpec with Matchers {
   "FragmentParser" should "parse fragment" in new Fixture {
     parse("") shouldBe Fragment.Identifier("")                     -> ""
     parse("identifier") shouldBe Fragment.Identifier("identifier") -> ""
+    parse("%C3%B6") shouldBe Fragment.Identifier("ö")              -> ""
 
     // relax parsing
     parse("fragment with spaces") shouldBe Fragment.Identifier("fragment with spaces") -> ""
