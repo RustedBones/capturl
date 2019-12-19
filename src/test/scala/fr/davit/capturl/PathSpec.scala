@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Michel Davit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fr.davit.capturl
 
 import fr.davit.capturl.scaladsl.Path
@@ -52,7 +68,9 @@ class PathSpec extends FlatSpec with Matchers {
     Path.root.resolve(Path("relative")) shouldBe Slash(Segment("relative"))
     Path("/directory/file").resolve(Path("otherFile")) shouldBe Slash(Segment("directory", Slash(Segment("otherFile"))))
     Path("relative/file").resolve(Path("otherFile")) shouldBe Segment("relative", Slash(Segment("otherFile")))
-    Path("/directory1/directory2/").resolve(Path("../otherFile")) shouldBe Slash(Segment("directory1", Slash(Segment("otherFile"))))
+    Path("/directory1/directory2/").resolve(Path("../otherFile")) shouldBe Slash(
+      Segment("directory1", Slash(Segment("otherFile")))
+    )
     Path.root.resolve(Path("../otherFile")) shouldBe Slash(Segment("otherFile"))
     Path.root.resolve(Path("../../otherFile")) shouldBe Slash(Segment("otherFile"))
   }
@@ -62,7 +80,10 @@ class PathSpec extends FlatSpec with Matchers {
     Path.root.relativize(Path("/base")) shouldBe Segment("base")
     Path("/base/").relativize(Path("/base/otherFile")) shouldBe Segment("otherFile")
     Path("/base/file").relativize(Path("/base/otherFile")) shouldBe Segment("otherFile")
-    Path("/base/too/deep/").relativize(Path("/base/file")) shouldBe Segment("..", Slash(Segment("..", Slash(Segment("file")))))
+    Path("/base/too/deep/").relativize(Path("/base/file")) shouldBe Segment(
+      "..",
+      Slash(Segment("..", Slash(Segment("file"))))
+    )
     Path("relativeBase/").relativize(Path("relativeBase/otherFile")) shouldBe Segment("otherFile")
     Path("relativeBase/").relativize(Path("otherBase/")) shouldBe Segment("otherBase", Slash())
   }

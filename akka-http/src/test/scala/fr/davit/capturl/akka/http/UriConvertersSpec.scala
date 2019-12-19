@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Michel Davit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fr.davit.capturl.akka.http
 import akka.http.scaladsl.model.Uri
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
@@ -12,14 +28,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   "UriConverters" should "convert schemes" in {
     {
       val akkaScheme = ""
-      val scheme = Scheme.empty
+      val scheme     = Scheme.empty
       (akkaScheme: Scheme) shouldBe scheme
       (scheme: String) shouldBe akkaScheme
     }
 
     {
       val akkaScheme = "http"
-      val scheme = Scheme.HTTP
+      val scheme     = Scheme.HTTP
       (akkaScheme: Scheme) shouldBe scheme
       (scheme: String) shouldBe akkaScheme
     }
@@ -28,38 +44,38 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert hosts" in {
     {
       val akkaHost = Uri.Host.Empty
-      val host = Host.empty
+      val host     = Host.empty
       (akkaHost: Host) shouldBe host
       (host: Uri.Host) shouldBe akkaHost
     }
 
     {
-      val ipv4 = Array.fill[Byte](4)(0)
+      val ipv4     = Array.fill[Byte](4)(0)
       val akkaHost = Uri.IPv4Host(ipv4)
-      val host = Host.IPv4Host(ipv4)
+      val host     = Host.IPv4Host(ipv4)
       (akkaHost: Host) shouldBe host
       (host: Uri.Host) shouldBe akkaHost
     }
 
     {
-      val ipv6 = Array.fill[Byte](16)(0)
+      val ipv6     = Array.fill[Byte](16)(0)
       val akkaHost = Uri.IPv6Host(ipv6)
-      val host = Host.IPv6Host(ipv6)
+      val host     = Host.IPv6Host(ipv6)
       (akkaHost: Host) shouldBe host
       (host: Uri.Host) shouldBe akkaHost
     }
 
     {
-      val domain = "example.com"
+      val domain   = "example.com"
       val akkaHost = Uri.NamedHost(domain)
-      val host = Host.NamedHost("example.com")
+      val host     = Host.NamedHost("example.com")
       (akkaHost: Host) shouldBe host
       (host: Uri.Host) shouldBe akkaHost
     }
 
     {
       val akkaHost = Uri.NamedHost("xn--d1abbgf6aiiy.xn--p1ai")
-      val host = Host.NamedHost("президент.рф")
+      val host     = Host.NamedHost("президент.рф")
       (akkaHost: Host) shouldBe host
       (host: Uri.Host) shouldBe akkaHost
     }
@@ -68,14 +84,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert user info" in {
     {
       val akkaUserInfo = ""
-      val userInfo = UserInfo.empty
+      val userInfo     = UserInfo.empty
       (akkaUserInfo: UserInfo) shouldBe userInfo
       (userInfo: String) shouldBe akkaUserInfo
     }
 
     {
       val akkaUserInfo = "user:password"
-      val userInfo = UserInfo.Credentials("user:password")
+      val userInfo     = UserInfo.Credentials("user:password")
       (akkaUserInfo: UserInfo) shouldBe userInfo
       (userInfo: String) shouldBe akkaUserInfo
     }
@@ -84,14 +100,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert port" in {
     {
       val akkaPort = 0
-      val port = Port.empty
+      val port     = Port.empty
       (akkaPort: Port) shouldBe port
       (port: Int) shouldBe akkaPort
     }
 
     {
       val akkaPort = 8080
-      val port = Port.Number(8080)
+      val port     = Port.Number(8080)
       (akkaPort: Port) shouldBe port
       (port: Int) shouldBe akkaPort
     }
@@ -100,14 +116,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert authority" in {
     {
       val akkaAuthority = Uri.Authority.Empty
-      val authority = Authority.empty
+      val authority     = Authority.empty
       (akkaAuthority: Authority) shouldBe authority
       (authority: Uri.Authority) shouldBe akkaAuthority
     }
 
     {
       val akkaAuthority = Uri.Authority(Uri.NamedHost("example.com"), 8080, "user:password")
-      val authority = Authority(Host.NamedHost("example.com"), Port.Number(8080), UserInfo.Credentials("user:password"))
+      val authority     = Authority(Host.NamedHost("example.com"), Port.Number(8080), UserInfo.Credentials("user:password"))
       (akkaAuthority: Authority) shouldBe authority
       (authority: Uri.Authority) shouldBe akkaAuthority
     }
@@ -116,21 +132,22 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert path" in {
     {
       val akkaPath = Uri.Path.Empty
-      val path = Path.empty
+      val path     = Path.empty
       (akkaPath: Path) shouldBe path
       (path: Uri.Path) shouldBe akkaPath
     }
 
     {
       val akkaPath = Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty)))
-      val path = Segment("directory", Slash(Segment("file.html")))
+      val path     = Segment("directory", Slash(Segment("file.html")))
       (akkaPath: Path) shouldBe path
       (path: Uri.Path) shouldBe akkaPath
     }
 
     {
       // non normalized double slash
-      val akkaPath = Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty))))
+      val akkaPath =
+        Uri.Path.Segment("directory", Uri.Path.Slash(Uri.Path.Slash(Uri.Path.Segment("file.html", Uri.Path.Empty))))
       val path = Segment("directory", Slash(Segment("", Slash(Segment("file.html")))))
       (akkaPath: Path) shouldBe path.normalize()
       (path: Uri.Path) shouldBe akkaPath
@@ -140,7 +157,7 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert query" in {
     {
       val akkaQuery = Uri.Query.Empty
-      val query = Query.empty
+      val query     = Query.empty
       (akkaQuery: Query) shouldBe query
       (query: Uri.Query) shouldBe akkaQuery
       (query: Option[String]) shouldBe empty
@@ -148,7 +165,7 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       val akkaQuery = Uri.Query.Cons("key", Uri.Query.EmptyValue, Uri.Query.Empty)
-      val query = Query.Part("key")
+      val query     = Query.Part("key")
       (akkaQuery: Query) shouldBe query
       (query: Uri.Query) shouldBe akkaQuery
       (query: Option[String]) shouldBe Some("key")
@@ -156,7 +173,7 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       val akkaQuery = Uri.Query.Cons("key", "value", Uri.Query.Empty)
-      val query = Query.Part("key", Some("value"))
+      val query     = Query.Part("key", Some("value"))
       (akkaQuery: Query) shouldBe query
       (query: Uri.Query) shouldBe akkaQuery
       (query: Option[String]) shouldBe Some("key=value")
@@ -164,7 +181,7 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       val akkaQuery = Uri.Query.Cons("receipt", "café de paris", Uri.Query.Empty)
-      val query = Query.Part("receipt", Some("café de paris"))
+      val query     = Query.Part("receipt", Some("café de paris"))
       (akkaQuery: Query) shouldBe query
       (query: Uri.Query) shouldBe akkaQuery
       (query: Option[String]) shouldBe Some("receipt=caf%C3%A9+de+paris")
@@ -174,14 +191,14 @@ class UriConvertersSpec extends FlatSpec with Matchers {
   it should "convert fragment" in {
     {
       val akkaFragment = None
-      val fragment = Fragment.empty
+      val fragment     = Fragment.empty
       (akkaFragment: Fragment) shouldBe fragment
       (fragment: Option[String]) shouldBe akkaFragment
     }
 
     {
       val akkaFragment = Some("identifier")
-      val fragment = Fragment.Identifier("identifier")
+      val fragment     = Fragment.Identifier("identifier")
       (akkaFragment: Fragment) shouldBe fragment
       (fragment: Option[String]) shouldBe akkaFragment
     }
@@ -196,8 +213,8 @@ class UriConvertersSpec extends FlatSpec with Matchers {
     }
 
     {
-      val uri = Uri("http://example.com/directory/file.html?key=value#identifier")
-      val iri = Iri("http://example.com/directory/file.html?key=value#identifier", Iri.ParsingMode.Strict)
+      val uri     = Uri("http://example.com/directory/file.html?key=value#identifier")
+      val iri     = Iri("http://example.com/directory/file.html?key=value#identifier", Iri.ParsingMode.Strict)
       val lazyUri = Iri("http://example.com/directory/file.html?key=value#identifier", Iri.ParsingMode.Lazy)
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri
@@ -206,12 +223,13 @@ class UriConvertersSpec extends FlatSpec with Matchers {
 
     {
       // unicode iri
-      val uri = Uri("http://xn--d1abbgf6aiiy.xn--p1ai" +
-        "/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B" +
-        "?%D1%84%D0%B8%D0%BB%D1%8C%D1%82%D1%80" +
-        "#%D0%B7%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%B8%D0%B5"
+      val uri = Uri(
+        "http://xn--d1abbgf6aiiy.xn--p1ai" +
+          "/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B" +
+          "?%D1%84%D0%B8%D0%BB%D1%8C%D1%82%D1%80" +
+          "#%D0%B7%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%B8%D0%B5"
       )
-      val iri = Iri("http://президент.рф/документы?фильтр#заглавие", Iri.ParsingMode.Strict)
+      val iri     = Iri("http://президент.рф/документы?фильтр#заглавие", Iri.ParsingMode.Strict)
       val lazyUri = Iri("http://президент.рф/документы?фильтр#заглавие", Iri.ParsingMode.Lazy)
       (uri: Iri) shouldBe iri
       (iri: Uri) shouldBe uri

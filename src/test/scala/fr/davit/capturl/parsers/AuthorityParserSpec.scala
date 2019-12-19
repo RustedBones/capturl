@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Michel Davit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
@@ -30,10 +46,10 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   "AuthorityParser" should "parse userinfo" in new UserInfoFixture {
-    parse("@host") shouldBe Credentials("") -> "@host"
-    parse("userinfo@host") shouldBe Credentials("userinfo") -> "@host"
+    parse("@host") shouldBe Credentials("")                                 -> "@host"
+    parse("userinfo@host") shouldBe Credentials("userinfo")                 -> "@host"
     parse("%75%73%65%72%69%6E%66%6F@host") shouldBe Credentials("userinfo") -> "@host"
-    parse("%C3%B6@host") shouldBe Credentials("ö") -> "@host"
+    parse("%C3%B6@host") shouldBe Credentials("ö")                          -> "@host"
   }
 
   it should "parse port" in new PortFixture {
@@ -54,12 +70,19 @@ class AuthorityParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse authority" in new AuthorityFixture {
-    parse("") shouldBe Authority.empty -> ""
-    parse("/path") shouldBe Authority.empty -> "/path"
-    parse("example.com/path") shouldBe Authority(NamedHost("example.com")) -> "/path"
+    parse("") shouldBe Authority.empty                                                    -> ""
+    parse("/path") shouldBe Authority.empty                                               -> "/path"
+    parse("example.com/path") shouldBe Authority(NamedHost("example.com"))                -> "/path"
     parse("example.com:80/path") shouldBe Authority(NamedHost("example.com"), Number(80)) -> "/path"
-    parse("user:password@example.com/path") shouldBe Authority(NamedHost("example.com"), userInfo = Credentials("user:password")) -> "/path"
-    parse("user:password@example.com:80/path") shouldBe Authority(NamedHost("example.com"), Number(80), Credentials("user:password")) -> "/path"
+    parse("user:password@example.com/path") shouldBe Authority(
+      NamedHost("example.com"),
+      userInfo = Credentials("user:password")
+    ) -> "/path"
+    parse("user:password@example.com:80/path") shouldBe Authority(
+      NamedHost("example.com"),
+      Number(80),
+      Credentials("user:password")
+    ) -> "/path"
 
     parse("@example.com/path") shouldBe Authority(NamedHost("example.com"), userInfo = Credentials("")) -> "/path"
   }

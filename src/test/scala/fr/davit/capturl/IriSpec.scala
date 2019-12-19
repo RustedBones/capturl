@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Michel Davit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fr.davit.capturl
 
 import fr.davit.capturl.parsers.StringParser.ParseException
@@ -22,9 +38,9 @@ class IriSpec extends FlatSpec with Matchers {
   }
 
   it should "normalize port" in {
-    val port = 8080
-    val scheme = Scheme("test", port)
-    val authority = Authority(testHost)
+    val port              = 8080
+    val scheme            = Scheme("test", port)
+    val authority         = Authority(testHost)
     val authorityWithPort = authority.copy(port = Port.Number(port))
 
     StrictIri(scheme, authorityWithPort) shouldBe StrictIri(scheme, authority)
@@ -46,12 +62,12 @@ class IriSpec extends FlatSpec with Matchers {
       Fragment.Identifier("identifier")
     )
 
-    val otherScheme = Scheme.HTTPS
-    val otherAuthority = Authority(Host.NamedHost("other.com"))
+    val otherScheme       = Scheme.HTTPS
+    val otherAuthority    = Authority(Host.NamedHost("other.com"))
     val otherAbsolutePath = Slash(Segment("otherDirectory", Slash(Segment("otherFile"))))
     val otherRelativePath = Segment("otherFile")
-    val otherQuery = Query.Part("otherKey")
-    val otherFragment = Fragment.Identifier("otherIdentifier")
+    val otherQuery        = Query.Part("otherKey")
+    val otherFragment     = Fragment.Identifier("otherIdentifier")
 
     {
       val otherIri = StrictIri(
