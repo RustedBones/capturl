@@ -43,7 +43,7 @@ trait IriParser
   // Raw Iri parts parsers
   // [scheme:][//authority][path][?query][#fragment]
   def rawScheme: Rule1[Option[String]] = rule {
-    optional(capture(oneOrMore(!':' ~ ANY)) ~ ':')
+    optional(capture(oneOrMore(!CharPredicate(':', '/', '?', '#') ~ ANY)) ~ ':')
   }
 
   def rawAuthority: Rule1[Option[String]] = rule {
