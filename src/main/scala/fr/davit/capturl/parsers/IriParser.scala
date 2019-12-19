@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Michel Davit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.scaladsl._
@@ -5,22 +21,19 @@ import org.parboiled2.{CharPredicate, Rule1, Rule2, RuleN}
 import shapeless.{Path => _, _}
 
 object IriParser {
+
   def apply(iri: String): StringParser with IriParser = {
     new StringParser(iri) with IriParser
   }
 }
 
-trait IriParser
-    extends SchemeParser
-    with AuthorityParser
-    with PathParser
-    with QueryParser
-    with FragmentParser { this: StringParser =>
+trait IriParser extends SchemeParser with AuthorityParser with PathParser with QueryParser with FragmentParser {
+  this: StringParser =>
 
   def `ihier-part`: Rule2[Authority, Path] = rule {
-    ("//" ~ iauthority ~ `ipath-abempty`) | (`ipath-absolute` | `ipath-rootless` | `ipath-empty`) ~> {
-        path: Path => Authority.empty :: path :: HNil
-      }
+    ("//" ~ iauthority ~ `ipath-abempty`) | (`ipath-absolute` | `ipath-rootless` | `ipath-empty`) ~> { path: Path =>
+      Authority.empty :: path :: HNil
+    }
   }
 
   def `iabsolute-part`: RuleN[Scheme :: Authority :: Path :: HNil] = rule {
@@ -28,8 +41,15 @@ trait IriParser
   }
 
   def `irelative-part`: RuleN[Scheme :: Authority :: Path :: HNil] = rule {
-    ("//" ~ iauthority ~ `ipath-abempty`) ~> ((authority: Authority, path: Path) => Scheme.empty :: authority :: path :: HNil) |
-      (`ipath-absolute` | `ipath-noscheme` | `ipath-empty`) ~> ((path: Path) => Scheme.empty :: Authority.empty :: path :: HNil)
+    ("//" ~ iauthority ~ `ipath-abempty`) ~> (
+        (
+            authority: Authority,
+            path: Path
+        ) => Scheme.empty :: authority :: path :: HNil
+    ) |
+      (`ipath-absolute` | `ipath-noscheme` | `ipath-empty`) ~> (
+          (path: Path) => Scheme.empty :: Authority.empty :: path :: HNil
+      )
   }
 
   def IRI: Rule1[StrictIri] = rule {
@@ -38,7 +58,6 @@ trait IriParser
         StrictIri(scheme, authority, path.normalize(), query.getOrElse(Query.empty), fragment.getOrElse(Fragment.empty))
     }
   }
-
 
   // Raw Iri parts parsers
   // [scheme:][//authority][path][?query][#fragment]
@@ -64,7 +83,13 @@ trait IriParser
 
   def IRILazy: Rule1[LazyIri] = rule {
     (rawScheme ~ rawAuthority ~ rawPath ~ rawQuery ~ rawFragment) ~> {
-      (scheme: Option[String], authority: Option[String], path: Option[String], query: Option[String], fragment: Option[String]) =>
+      (
+          scheme: Option[String],
+          authority: Option[String],
+          path: Option[String],
+          query: Option[String],
+          fragment: Option[String]
+      ) =>
         LazyIri(scheme, authority, path, query, fragment)
     }
   }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Michel Davit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fr.davit.capturl.scaladsl
 
 import java.net.{Inet4Address, Inet6Address}
@@ -77,13 +93,13 @@ object Host {
 
     private def hextet(bytes: Seq[Byte]): String = bytes.map(java.lang.Byte.toUnsignedInt) match {
       case Seq(h, l) => ((h << 8) + l).toHexString
-      case _ => throw new Exception(s"Can't convert $bytes to hextet")
+      case _         => throw new Exception(s"Can't convert $bytes to hextet")
     }
 
     private def shorten(hextets: Seq[String]): Seq[String] = {
-      var maxIdx = -1
-      var maxLength = 0
-      var currentIdx = -1
+      var maxIdx        = -1
+      var maxLength     = 0
+      var currentIdx    = -1
       var currentLength = 0
       hextets.zipWithIndex.foreach {
         case ("0", idx) =>
@@ -103,8 +119,8 @@ object Host {
 
       if (maxLength > 0) {
         val builder = Seq.newBuilder[String]
-        val high = hextets.take(maxIdx)
-        val low = hextets.drop(maxIdx + maxLength)
+        val high    = hextets.take(maxIdx)
+        val low     = hextets.drop(maxIdx + maxLength)
         builder ++= (if (high.isEmpty) Seq("") else high)
         builder += ""
         builder ++= (if (low.isEmpty) Seq("") else low)

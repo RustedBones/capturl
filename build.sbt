@@ -4,12 +4,14 @@ val repo     = "capturl"
 
 lazy val commonSettings = Seq(
   organization := "fr.davit",
+  organizationName := "Michel Davit",
   version := "0.2.7-SNAPSHOT",
   crossScalaVersions := Seq("2.11.12", "2.12.10"), //, "2.13.0"),
   scalaVersion := crossScalaVersions.value.last,
   Compile / compile / scalacOptions ++= Settings.scalacOptions(scalaVersion.value),
   homepage := Some(url(s"https://github.com/$username/$repo")),
-  licenses += "APACHE" -> url(s"https://github.com/$username/$repo/blob/master/LICENSE"),
+  licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt")),
+  startYear := Some(2019),
   scmInfo := Some(ScmInfo(url(s"https://github.com/$username/$repo"), s"git@github.com:$username/$repo.git")),
   developers := List(
     Developer(
@@ -41,7 +43,7 @@ lazy val `capturl-contextual` = (project in file("contextual"))
   .dependsOn(`capturl`)
   .settings(commonSettings: _*)
   .settings(
-    crossScalaVersions := Seq("2.12.8"), // no support fo 2.11
+    crossScalaVersions := Seq("2.12.10"), // no support fo 2.11
     scalaVersion := crossScalaVersions.value.last,
     libraryDependencies ++= Seq(
       Dependencies.contextual,
