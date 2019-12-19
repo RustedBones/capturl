@@ -10,25 +10,12 @@ Capturl is a Scala/Java library that provide parsers and models to work with Int
 The implementation is strongly inspired by the great [`akka-http`](https://github.com/akka/akka-http) 
 [Uri model](https://doc.akka.io/docs/akka-http/current/common/uri-model.html) with modularity and simplicity in mind.
 
-## Versions
-
-| Version | Release date | Scala versions                                     |
-| ------- | ------------ | -------------------------------------------------- |
-| `0.2.6` | 2019-11-12   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-| `0.2.5` | 2019-11-11   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-| `0.2.4` | 2019-11-08   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-| `0.2.3` | 2019-11-06   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-| `0.2.2` | 2019-10-31   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-| `0.2.1` | 2019-10-29   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-| `0.2.0` | 2019-10-11   | `2.11.12` (excluded capturl-contextual), `2.12.10` |
-
-
 ## Setup
 
 Add to your `build.sbt`:
 
 ```scala
-libraryDependencies += "fr.davit" %% "capturl" % <version>
+libraryDependencies += "fr.davit" %% "capturl" % "0.2.7"
 ```
 
 ## Parsers
