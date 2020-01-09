@@ -153,4 +153,9 @@ class IriSpec extends FlatSpec with Matchers {
     Iri("path?query#", Lazy) shouldBe Iri("path?query#", Strict)
   }
 
+  "Iri" should "ignore leading and trailing whitespace" in {
+    Iri(" http://example.com/path\t", Lazy) shouldBe Iri("http://example.com/path")
+    Iri(" http://example.com/path\t", Strict) shouldBe Iri("http://example.com/path")
+  }
+
 }
