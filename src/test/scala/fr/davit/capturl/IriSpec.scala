@@ -153,4 +153,16 @@ class IriSpec extends FlatSpec with Matchers {
     Iri("path?query#", Lazy) shouldBe Iri("path?query#", Strict)
   }
 
+  "Iri" should "ignore leading and trailing whitespace" in {
+    Iri(" http://example.com/path\t", Lazy) shouldBe Iri("http://example.com/path")
+    Iri(" http://example.com/path\t", Strict) shouldBe Iri("http://example.com/path")
+    Iri(" http://example.com/path", Strict) shouldBe Iri("http://example.com/path")
+    Iri("http://example.com/path ", Strict) shouldBe Iri("http://example.com/path")
+    Iri("\nhttp://example.com/path") shouldBe Iri("http://example.com/path")
+    Iri("http://example.com/p a   t h    ") shouldBe Iri("http://example.com/p a   t h")
+    Iri("    http://example.com/path    ").scheme shouldBe Scheme.HTTP
+    Iri("    http://example.com/path    ").path shouldBe Path("/path")
+    a[ParseException] shouldBe thrownBy(Iri("\u00ADhttp://example.com/path")) // soft hyphen not counted as whitespace
+  }
+
 }

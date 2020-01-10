@@ -23,7 +23,7 @@ import shapeless.{Path => _, _}
 object IriParser {
 
   def apply(iri: String): StringParser with IriParser = {
-    new StringParser(iri) with IriParser
+    new StringParser(iri.trim) with IriParser
   }
 }
 
