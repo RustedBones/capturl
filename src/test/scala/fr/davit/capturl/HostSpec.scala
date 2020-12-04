@@ -17,9 +17,10 @@
 package fr.davit.capturl
 
 import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class HostSpec extends FlatSpec with Matchers {
+class HostSpec extends AnyFlatSpec with Matchers {
 
   "IPv4Host" should "normalize ip address" in {
     IPv4Host("127.000.000.001").toString shouldBe "127.0.0.1"

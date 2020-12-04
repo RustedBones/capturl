@@ -20,9 +20,10 @@ import fr.davit.capturl.scaladsl.Authority.Port
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
 import fr.davit.capturl.scaladsl.contextual.iri._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class IriInterpolatorSpec extends FlatSpec with Matchers {
+class IriInterpolatorSpec extends AnyFlatSpec with Matchers {
 
   val scheme    = Scheme.Protocol("http")
   val authority = Authority(Host.NamedHost("localhost"), Port.Number(8080))

@@ -19,9 +19,10 @@ import fr.davit.capturl.parsers.ParserFixture.TestParser
 import fr.davit.capturl.scaladsl.Path
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import org.parboiled2.ParserInput
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class PathParserSpec extends FlatSpec with Matchers {
+class PathParserSpec extends AnyFlatSpec with Matchers {
 
   trait Fixture extends ParserFixture[Path] {
     override def createParser(input: ParserInput) = new TestParser[Path](input) with PathParser {

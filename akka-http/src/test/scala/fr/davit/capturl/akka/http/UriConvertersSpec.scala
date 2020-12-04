@@ -19,9 +19,10 @@ import akka.http.scaladsl.model.Uri
 import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class UriConvertersSpec extends FlatSpec with Matchers {
+class UriConvertersSpec extends AnyFlatSpec with Matchers {
 
   import UriConverters._
 

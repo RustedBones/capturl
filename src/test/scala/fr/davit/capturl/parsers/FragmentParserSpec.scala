@@ -17,11 +17,12 @@
 package fr.davit.capturl.parsers
 
 import fr.davit.capturl.parsers.ParserFixture.TestParser
-import fr.davit.capturl.scaladsl.{Fragment, Path}
+import fr.davit.capturl.scaladsl.Fragment
 import org.parboiled2.ParserInput
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class FragmentParserSpec extends FlatSpec with Matchers {
+class FragmentParserSpec extends AnyFlatSpec with Matchers {
 
   trait Fixture extends ParserFixture[Fragment] {
     override def createParser(input: ParserInput) = new TestParser[Fragment](input) with FragmentParser {

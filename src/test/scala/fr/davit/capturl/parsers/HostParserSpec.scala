@@ -15,13 +15,15 @@
  */
 
 package fr.davit.capturl.parsers
-import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
+
 import fr.davit.capturl.parsers.ParserFixture.TestParser
 import fr.davit.capturl.scaladsl.Host
+import fr.davit.capturl.scaladsl.Host.{IPv4Host, IPv6Host, NamedHost}
 import org.parboiled2.ParserInput
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class HostParserSpec extends FlatSpec with Matchers {
+class HostParserSpec extends AnyFlatSpec with Matchers {
 
   trait Fixture extends ParserFixture[Host] {
     override def createParser(input: ParserInput) = new TestParser[Host](input) with HostParser {
@@ -38,8 +40,6 @@ class HostParserSpec extends FlatSpec with Matchers {
   }
 
   it should "parse IPv6 hosts" in new Fixture {
-    val t = createParser("::1").IPv6address.run()
-
     parse("[::1]:80") shouldBe IPv6Host(
       Vector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1).map(_.toByte)
     ) -> ":80"
