@@ -16,16 +16,17 @@
 
 package fr.davit.capturl.parsers
 
-import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
-import fr.davit.capturl.scaladsl.Host.NamedHost
 import fr.davit.capturl.parsers.ParserFixture.TestParser
-import fr.davit.capturl.scaladsl.{Authority, Host}
+import fr.davit.capturl.scaladsl.Authority
 import fr.davit.capturl.scaladsl.Authority.Port.Number
 import fr.davit.capturl.scaladsl.Authority.UserInfo.Credentials
-import org.parboiled2.{ParseError, ParserInput}
-import org.scalatest.{FlatSpec, Matchers}
+import fr.davit.capturl.scaladsl.Authority.{Port, UserInfo}
+import fr.davit.capturl.scaladsl.Host.NamedHost
+import org.parboiled2.ParserInput
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class AuthorityParserSpec extends FlatSpec with Matchers {
+class AuthorityParserSpec extends AnyFlatSpec with Matchers {
 
   trait UserInfoFixture extends ParserFixture[UserInfo] {
     override def createParser(input: ParserInput) = new TestParser[UserInfo](input) with AuthorityParser {

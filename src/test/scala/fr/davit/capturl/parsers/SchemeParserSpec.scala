@@ -15,12 +15,14 @@
  */
 
 package fr.davit.capturl.parsers
+
 import fr.davit.capturl.parsers.ParserFixture.TestParser
 import fr.davit.capturl.scaladsl.Scheme
-import org.parboiled2.{ParseError, ParserInput}
-import org.scalatest.{FlatSpec, Matchers}
+import org.parboiled2.ParserInput
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class SchemeParserSpec extends FlatSpec with Matchers {
+class SchemeParserSpec extends AnyFlatSpec with Matchers {
 
   trait Fixture extends ParserFixture[Scheme] {
     override def createParser(input: ParserInput) = new TestParser[Scheme](input) with SchemeParser {

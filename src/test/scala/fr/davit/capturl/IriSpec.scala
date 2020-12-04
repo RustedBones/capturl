@@ -21,10 +21,10 @@ import fr.davit.capturl.scaladsl.Authority.Port
 import fr.davit.capturl.scaladsl.Iri.ParsingMode.{Lazy, Strict}
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
-import org.parboiled2.ParseError
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class IriSpec extends FlatSpec with Matchers {
+class IriSpec extends AnyFlatSpec with Matchers {
 
   val testHost = Host.NamedHost("example.com")
 

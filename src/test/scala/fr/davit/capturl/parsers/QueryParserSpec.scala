@@ -19,9 +19,10 @@ package fr.davit.capturl.parsers
 import fr.davit.capturl.parsers.ParserFixture.TestParser
 import fr.davit.capturl.scaladsl.Query
 import org.parboiled2.ParserInput
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class QueryParserSpec extends FlatSpec with Matchers {
+class QueryParserSpec extends AnyFlatSpec with Matchers {
 
   trait Fixture extends ParserFixture[Query] {
     override def createParser(input: ParserInput) = new TestParser[Query](input) with QueryParser {

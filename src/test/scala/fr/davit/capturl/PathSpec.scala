@@ -18,9 +18,10 @@ package fr.davit.capturl
 
 import fr.davit.capturl.scaladsl.Path
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class PathSpec extends FlatSpec with Matchers {
+class PathSpec extends AnyFlatSpec with Matchers {
 
   "Path" should "tell if it is empty" in {
     Path.empty.isEmpty shouldBe true

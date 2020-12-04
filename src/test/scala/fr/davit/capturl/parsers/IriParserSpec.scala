@@ -21,9 +21,10 @@ import fr.davit.capturl.scaladsl.Authority.Port
 import fr.davit.capturl.scaladsl.Path.{Segment, Slash}
 import fr.davit.capturl.scaladsl._
 import org.parboiled2.{ParserInput, Rule1}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class IriParserSpec extends FlatSpec with Matchers {
+class IriParserSpec extends AnyFlatSpec with Matchers {
 
   class IriParserBehaviour(testRule: IriParser => Rule1[Iri]) {
 
