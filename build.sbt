@@ -13,8 +13,22 @@ lazy val filterScalacOptions = { options: Seq[String] =>
 // for sbt-github-actions
 ThisBuild / crossScalaVersions := Seq("2.12.12")
 ThisBuild / githubWorkflowBuild := Seq(
-  WorkflowStep.Sbt(name = Some("Check project"), commands = List("scalafmtCheckAll", "headerCheckAll")),
-  WorkflowStep.Sbt( name = Some("Build project"), commands = List("test", "it:test"))
+  WorkflowStep.Sbt(
+    name = Some("Check project"),
+    commands = List(
+    "scalafmtCheckAll", "headerCheckAll",
+    "capturl-contextual/scalafmtCheckAll", "capturl-contextual/headerCheckAll",
+    "capturl-akka-http/scalafmtCheckAll", "capturl-akka-http/headerCheckAll"
+    )
+  ),
+  WorkflowStep.Sbt(
+    name = Some("Build project"),
+    commands = List(
+      "test",
+      "capturl-contextual/test",
+      "capturl-akka-http/test"
+    )
+  )
 )
 ThisBuild / githubWorkflowTargetBranches := Seq("master")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq.empty

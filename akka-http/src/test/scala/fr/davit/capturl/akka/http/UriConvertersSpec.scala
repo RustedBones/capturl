@@ -236,13 +236,5 @@ class UriConvertersSpec extends AnyFlatSpec with Matchers {
       (iri: Uri) shouldBe uri
       (lazyUri: Uri) shouldBe uri
     }
-
-    {
-      // lazy iri (broken query)
-      val uri = Uri("http://example.com/?wrong%encoding")
-      val iri = Iri("http://example.com/?wrong%encoding", Iri.ParsingMode.Lazy)
-      (uri: Iri) shouldBe iri
-      (iri: Uri) shouldBe uri
-    }
   }
 }
