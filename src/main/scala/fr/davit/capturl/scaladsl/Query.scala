@@ -16,20 +16,16 @@
 
 package fr.davit.capturl.scaladsl
 
+import fr.davit.capturl.ccompat.{Builder, QuerySeqOptimized}
 import fr.davit.capturl.javadsl
 import fr.davit.capturl.javadsl.QueryParameter
 import fr.davit.capturl.parsers.QueryParser
 
-import scala.collection.JavaConverters._
-import scala.collection.immutable.LinearSeq
-import scala.collection.{mutable, LinearSeqOptimized}
+import scala.collection.mutable
 import scala.util.Try
+import scala.jdk.CollectionConverters._
 
-sealed abstract class Query
-    extends javadsl.Query
-    with LinearSeq[(String, Option[String])]
-    with LinearSeqOptimized[(String, Option[String]), Query] {
-  override def newBuilder: mutable.Builder[(String, Option[String]), Query] = Query.newBuilder
+sealed abstract class Query extends javadsl.Query with QuerySeqOptimized {
 
   override def toString: String = {
     map {
@@ -62,11 +58,11 @@ object Query {
   }
 
   def newBuilder: mutable.Builder[(String, Option[String]), Query] =
-    new mutable.Builder[(String, Option[String]), Query] {
-      val b                                             = Seq.newBuilder[(String, Option[String])]
-      def +=(elem: (String, Option[String])): this.type = { b += elem; this }
-      def clear()                                       = b.clear()
-      def result()                                      = apply(b.result())
+    new Builder[(String, Option[String]), Query] {
+      val b                                                          = Seq.newBuilder[(String, Option[String])]
+      override def addOne(elem: (String, Option[String])): this.type = { b += elem; this }
+      def clear()                                                    = b.clear()
+      def result()                                                   = apply(b.result())
     }
 
   //--------------------------------------------------------------------------------------------------------------------
