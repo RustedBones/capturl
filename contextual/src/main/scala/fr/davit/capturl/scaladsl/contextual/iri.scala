@@ -16,39 +16,50 @@
 
 package fr.davit.capturl.scaladsl.contextual
 
-import contextual.{Interpolator, Prefix}
+import contextual._
+import fr.davit.capturl.parsers.StringParser.ParseException
 import fr.davit.capturl.scaladsl.Iri
-
-import scala.util.{Failure, Success, Try}
 
 object iri {
 
   object IriInterpolator extends Interpolator {
 
-    override type Input = String
-
     override type Output = Iri
 
     override def contextualize(interpolation: StaticInterpolation): Seq[ContextType] = {
       interpolation.parts match {
-        case (lit: Literal) :: Nil =>
-          Try(Iri(lit.string)) match {
-            case Success(_) => Nil
-            case Failure(_) => interpolation.abort(lit, 0, s"Invalid IRI ${lit.string}")
+        case (lit @ Literal(_, str)) :: Nil =>
+          try Iri(str)
+          catch {
+            case e: ParseException => interpolation.abort(lit, 0, s"Invalid IRI $str\n${e.getMessage}")
           }
+          Nil
         case parts =>
           val hole = parts.collectFirst { case h: Hole => h }.get
           interpolation.abort(hole, "iri: substitutions are not  yet supported")
       }
     }
 
+    override def evaluator(
+        contexts: Seq[ContextType],
+        interpolation: StaticInterpolation
+    ): interpolation.macroContext.Tree = {
+      import interpolation.macroContext.universe._
+      q"""IriInterpolator.evaluate(
+        new IriInterpolator.RuntimeInterpolation(
+          _root_.scala.collection.immutable.Seq(..${interpolation.literals}),
+          _root_.scala.collection.immutable.Seq.empty
+        )
+      )"""
+    }
+
     def evaluate(interpolation: RuntimeInterpolation): Iri = {
-      Iri(interpolation.parts.mkString)
+      Iri(interpolation.literals.mkString)
     }
   }
 
   implicit class IriStringContext(sc: StringContext) {
-    val iri = Prefix(IriInterpolator, sc)
+    def iri(expressions: String*): Iri = macro Macros.contextual[IriInterpolator.type]
   }
 
 }

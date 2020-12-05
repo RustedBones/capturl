@@ -94,10 +94,8 @@ lazy val `capturl-contextual` = (project in file("contextual"))
   .dependsOn(`capturl`)
   .settings(commonSettings: _*)
   .settings(
-    scalaVersion := crossScalaVersions.value.last,
     libraryDependencies ++= Seq(
       Dependencies.contextual,
-      Dependencies.Provided.scalaReflect(scalaVersion.value),
       Dependencies.Test.scalaTest
     )
   )
