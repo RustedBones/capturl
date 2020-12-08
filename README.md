@@ -1,6 +1,6 @@
 # capturl
 
-[![Scala CI](https://github.com/RustedBones/capturl/workflows/Scala%20CI/badge.svg)](https://github.com/RustedBones/capturl/actions?query=branch%3Amaster+workflow%3A"Continuous+Integration")
+[![Continuous Integration](https://github.com/RustedBones/capturl/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/RustedBones/capturl/actions?query=branch%3Amaster+workflow%3A"Continuous+Integration")
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.davit/capturl_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.davit/capturl_2.12)
 [![Software License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=flat)](LICENSE)
 
