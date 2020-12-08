@@ -21,7 +21,7 @@ import fr.davit.capturl.parsers.PathParser
 import fr.davit.capturl.scaladsl.Path.{Empty, Segment, Slash, SlashOrEmpty}
 
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 sealed abstract class Path extends javadsl.Path {

@@ -32,10 +32,13 @@ class IriInterpolatorSpec extends AnyFlatSpec with Matchers {
   val fragment  = Fragment.Identifier("identifier")
 
   "IriInterpolator" should "interpolate Iri from string" in {
-    iri"http://localhost:8080/path?key#identifier" shouldBe StrictIri(scheme, authority, path, query, fragment)
+    val test = iri"http://localhost:8080/path?key#identifier"
+
+    test shouldBe StrictIri(scheme, authority, path, query, fragment)
   }
 
   it should "not compile when interpolating invalid iris" in {
-    """ val myIri = iri"http://user{info@example.com/" """ shouldNot compile
+    """val myIri = iri"http://user{info@example.com/"
+      |""".stripMargin shouldNot compile
   }
 }
