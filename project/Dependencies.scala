@@ -5,7 +5,7 @@ object Dependencies {
   object Versions {
     val akkaHttp              = "10.2.1"
     val akka                  = "2.5.27"
-    val contextual            = "2.0.0"
+    val contextual            = "3.0.0"
     val javaCompat            = "0.9.1"
     val parboiled             = "2.2.1"
     val scalaCollectionCompat = "2.2.0"

@@ -40,26 +40,13 @@ object iri {
       }
     }
 
-    override def evaluator(
-        contexts: Seq[ContextType],
-        interpolation: StaticInterpolation
-    ): interpolation.macroContext.Tree = {
-      import interpolation.macroContext.universe._
-      q"""IriInterpolator.evaluate(
-        new IriInterpolator.RuntimeInterpolation(
-          _root_.scala.collection.immutable.Seq(..${interpolation.literals}),
-          _root_.scala.collection.immutable.Seq.empty
-        )
-      )"""
-    }
-
     def evaluate(interpolation: RuntimeInterpolation): Iri = {
       Iri(interpolation.literals.mkString)
     }
   }
 
   implicit class IriStringContext(sc: StringContext) {
-    def iri(expressions: String*): Iri = macro Macros.contextual[IriInterpolator.type]
+    val iri = Prefix(IriInterpolator, sc)
   }
 
 }
