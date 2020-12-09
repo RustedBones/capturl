@@ -87,7 +87,6 @@ val iri = iri"http://user{info@example.com/"
 - provide strict / relax parser mode
 - provide more normalization options
 - support holes in interpolation 
-- support scala 2.13
 
 ## capturl-akka-http
 
