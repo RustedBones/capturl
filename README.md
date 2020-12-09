@@ -15,7 +15,7 @@ The implementation is strongly inspired by the great [`akka-http`](https://githu
 Add to your `build.sbt`:
 
 ```scala
-libraryDependencies += "fr.davit" %% "capturl" % "0.2.7"
+libraryDependencies += "fr.davit" %% "capturl" % "<version>"
 ```
 
 ## Parsers
