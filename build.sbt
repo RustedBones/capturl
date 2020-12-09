@@ -54,7 +54,7 @@ lazy val commonSettings = add213CrossDirs(Compile) ++
   Seq(
     organization := "fr.davit",
     organizationName := "Michel Davit",
-    version := "0.3.0",
+    version := "0.3.1-SNAPSHOT",
     crossScalaVersions := (ThisBuild / crossScalaVersions).value,
     scalaVersion := crossScalaVersions.value.head,
     scalacOptions ~= filterScalacOptions,
